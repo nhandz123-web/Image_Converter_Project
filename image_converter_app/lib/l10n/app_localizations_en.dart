@@ -1,0 +1,239 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get storage_used => 'Storage Used';
+
+  @override
+  String get login => 'Login';
+
+  @override
+  String get loginSuccess => 'Login successful!';
+
+  @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get enterEmail => 'Enter your email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get enterPassword => 'Enter your password';
+
+  @override
+  String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get noAccount => 'Don\'t have an account?';
+
+  @override
+  String get registerNow => 'Register now';
+
+  @override
+  String get register => 'Register';
+
+  @override
+  String get registerSuccess => 'Registration successful! Logging in...';
+
+  @override
+  String get createAccount => 'Create new account';
+
+  @override
+  String get fullName => 'Full name';
+
+  @override
+  String get enterFullName => 'Enter your full name';
+
+  @override
+  String get confirmPassword => 'Confirm password';
+
+  @override
+  String get enterConfirmPassword => 'Re-enter password';
+
+  @override
+  String get haveAccount => 'Already have an account?';
+
+  @override
+  String get loginNow => 'Login now';
+
+  @override
+  String get fillAllFields => 'Please fill in all fields';
+
+  @override
+  String get passwordNotMatch => 'Passwords do not match';
+
+  @override
+  String get pdfTools => 'PDF Tools';
+
+  @override
+  String get welcomeMessage => 'Welcome!';
+
+  @override
+  String get chooseToolBelow => 'Choose a tool below to get started';
+
+  @override
+  String get popularTools => 'Popular Tools';
+
+  @override
+  String get imageToPdf => 'Image to PDF';
+
+  @override
+  String get wordToPdf => 'Word to PDF';
+
+  @override
+  String get excelToPdf => 'Excel to PDF';
+
+  @override
+  String get qrScan => 'QR Scan';
+
+  @override
+  String get mergePdf => 'Merge PDF';
+
+  @override
+  String get compressData => 'Compress Data';
+
+  @override
+  String get recentDocuments => 'Recent Documents';
+
+  @override
+  String get viewAll => 'View All';
+
+  @override
+  String get featureInDevelopment => 'Feature in development!';
+
+  @override
+  String get feature => 'Feature';
+
+  @override
+  String get inDevelopment => 'in development!';
+
+  @override
+  String get processing => 'Processing';
+
+  @override
+  String get chooseImageFrom => 'Choose image from';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get noFiles => 'No files yet';
+
+  @override
+  String get renameFile => 'Rename file';
+
+  @override
+  String get newName => 'New name';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get pdfResult => 'PDF Result';
+
+  @override
+  String get originalImage => 'Original Image';
+
+  @override
+  String get pdfReady => 'PDF file is ready';
+
+  @override
+  String get tapDownloadToView => 'Tap button below to download';
+
+  @override
+  String get fileName => 'File name';
+
+  @override
+  String get fileSize => 'File size';
+
+  @override
+  String get createdDate => 'Created date';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get completed => 'Completed';
+
+  @override
+  String get downloading => 'Downloading...';
+
+  @override
+  String get downloadAndOpen => 'Download & Open file';
+
+  @override
+  String get noOriginalImage => 'Original image not found';
+
+  @override
+  String get oldFileNoImage => 'This file is too old, no original image saved!';
+
+  @override
+  String get image => 'Image';
+
+  @override
+  String get imageError => 'Image load error';
+
+  @override
+  String get downloadedTo => 'Downloaded to';
+
+  @override
+  String get downloadError => 'Download error or missing permissions';
+
+  @override
+  String get confirmDelete => 'Confirm Delete';
+
+  @override
+  String get confirmDeleteMessage =>
+      'Are you sure you want to delete this file?';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get allDocuments => 'All Documents';
+
+  @override
+  String get searchDocuments => 'Search documents...';
+
+  @override
+  String get loading => 'Loading...';
+
+  @override
+  String get noSearchResults => 'No results found';
+
+  @override
+  String get noDocuments => 'No documents yet';
+
+  @override
+  String get trySearchOther => 'Try searching with other keywords';
+
+  @override
+  String get loadDataError => 'Failed to load data';
+}
