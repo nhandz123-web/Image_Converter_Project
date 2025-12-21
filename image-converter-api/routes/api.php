@@ -13,6 +13,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::middleware('auth:api')->group(function () { 
+
+    // Route cập nhật thông tin user
+    Route::post('/user/update', [AuthController::class, 'updateProfile']);
     
     // API Đăng xuất
     Route::post('/logout', [AuthController::class, 'logout']); 

@@ -73,4 +73,41 @@ class AuthController extends Controller
             'token' => $token
         ], 200);
     }
+
+    // Thêm hàm này vào AuthController class
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        // 1. Validate dữ liệu
+        $request->validate([
+            'name' => 'required|string|max:255',
+            // Nếu có gửi password mới lên thì bắt buộc phải gửi kèm current_password
+            'password' => 'nullable|string|min:6|confirmed',
+            'current_password' => 'required_with:password' 
+        ]);
+
+        // 2. Cập nhật tên
+        $user->name = $request->name;
+
+        // 3. Xử lý đổi mật khẩu (Nếu người dùng có nhập mật khẩu mới)
+        if ($request->filled('password')) {
+            // Kiểm tra mật khẩu cũ có đúng không
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'message' => 'Mật khẩu hiện tại không chính xác!'
+                ], 400); // Trả về lỗi 400 Bad Request
+            }
+
+            // Nếu đúng thì mới cho đổi
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Cập nhật hồ sơ thành công!',
+            'user' => $user
+        ]);
+    }
 }

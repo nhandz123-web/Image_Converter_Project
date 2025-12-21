@@ -236,4 +236,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadDataError => 'Failed to load data';
+
+  @override
+  String get myProfile => 'My Profile';
+
+  @override
+  String get storageUsed => 'Storage Used';
+
+  @override
+  String get calculating => 'Calculating...';
+
+  @override
+  String get youHaveUsed => 'You have used';
+
+  @override
+  String get storage => 'storage';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get appSettings => 'App Settings';
+
+  @override
+  String get helpAndSupport => 'Help & Support';
+
+  @override
+  String get confirmLogout => 'Confirm Logout';
+
+  @override
+  String get logoutMessage => 'Are you sure you want to logout?';
 }

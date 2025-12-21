@@ -7,6 +7,7 @@ import 'login_screen.dart';
 import 'settings_screen.dart';
 import 'file_detail_screen.dart';
 import 'all_documents_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -135,12 +136,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               IconButton(
-                                // Đổi thành icon hình người/tài khoản cho đúng ý nghĩa Profile
+                                // Icon Avatar đẹp (hoặc icon thường tùy bạn)
                                 icon: Icon(Icons.manage_accounts_rounded, size: 30, color: Colors.white),
-                                onPressed: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => SettingsScreen()),
-                                ),
+                                onPressed: () {
+                                  // --- SỬA CHỖ NÀY ---
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      // ProfileScreen giờ tự load dữ liệu, không cần truyền vào nữa
+                                      builder: (context) => ProfileScreen(),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),

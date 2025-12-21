@@ -75,5 +75,18 @@
   "noSearchResults": "Không tìm thấy kết quả",
   "noDocuments": "Chưa có tài liệu nào",
   "trySearchOther": "Thử tìm kiếm từ khóa khác",
-  "loadDataError": "Không tải được dữ liệu"
+  "loadDataError": "Không tải được dữ liệu",
+  "myProfile": "Hồ sơ của tôi",
+  "loading": "Đang tải...",
+  "storageUsed": "Dung lượng đã dùng",
+  "calculating": "Đang tính toán...",
+  "youHaveUsed": "Bạn đã dùng",
+  "storage": "dung lượng",
+  "editProfile": "Chỉnh sửa thông tin",
+  "appSettings": "Cài đặt ứng dụng",
+  "helpAndSupport": "Trợ giúp & Hỗ trợ",
+  "logout": "Đăng xuất",
+  "confirmLogout": "Xác nhận đăng xuất",
+  "logoutMessage": "Bạn có chắc chắn muốn đăng xuất?",
+  "cancel": "Hủy"
 }

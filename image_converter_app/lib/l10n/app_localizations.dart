@@ -553,6 +553,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load data'**
   String get loadDataError;
+
+  /// No description provided for @myProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get myProfile;
+
+  /// No description provided for @storageUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage Used'**
+  String get storageUsed;
+
+  /// No description provided for @calculating.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculating...'**
+  String get calculating;
+
+  /// No description provided for @youHaveUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'You have used'**
+  String get youHaveUsed;
+
+  /// No description provided for @storage.
+  ///
+  /// In en, this message translates to:
+  /// **'storage'**
+  String get storage;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @appSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'App Settings'**
+  String get appSettings;
+
+  /// No description provided for @helpAndSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get helpAndSupport;
+
+  /// No description provided for @confirmLogout.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Logout'**
+  String get confirmLogout;
+
+  /// No description provided for @logoutMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to logout?'**
+  String get logoutMessage;
 }
 
 class _AppLocalizationsDelegate

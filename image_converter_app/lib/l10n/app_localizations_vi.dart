@@ -235,4 +235,34 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get loadDataError => 'Không tải được dữ liệu';
+
+  @override
+  String get myProfile => 'Hồ sơ của tôi';
+
+  @override
+  String get storageUsed => 'Dung lượng đã dùng';
+
+  @override
+  String get calculating => 'Đang tính toán...';
+
+  @override
+  String get youHaveUsed => 'Bạn đã dùng';
+
+  @override
+  String get storage => 'dung lượng';
+
+  @override
+  String get editProfile => 'Chỉnh sửa thông tin';
+
+  @override
+  String get appSettings => 'Cài đặt ứng dụng';
+
+  @override
+  String get helpAndSupport => 'Trợ giúp & Hỗ trợ';
+
+  @override
+  String get confirmLogout => 'Xác nhận đăng xuất';
+
+  @override
+  String get logoutMessage => 'Bạn có chắc chắn muốn đăng xuất?';
 }

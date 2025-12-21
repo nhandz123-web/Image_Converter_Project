@@ -75,5 +75,18 @@
   "noSearchResults": "No results found",
   "noDocuments": "No documents yet",
   "trySearchOther": "Try searching with other keywords",
-  "loadDataError": "Failed to load data"
+  "loadDataError": "Failed to load data",
+  "myProfile": "My Profile",
+  "loading": "Loading...",
+  "storageUsed": "Storage Used",
+  "calculating": "Calculating...",
+  "youHaveUsed": "You have used",
+  "storage": "storage",
+  "editProfile": "Edit Profile",
+  "appSettings": "App Settings",
+  "helpAndSupport": "Help & Support",
+  "logout": "Logout",
+  "confirmLogout": "Confirm Logout",
+  "logoutMessage": "Are you sure you want to logout?",
+  "cancel": "Cancel"
 }

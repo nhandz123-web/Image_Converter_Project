@@ -110,4 +110,52 @@ class DocumentService {
       throw Exception('Lỗi khi đổi tên file');
     }
   }
+
+  // Hàm lấy thông tin user (Tên, Email)
+  Future<Map<String, dynamic>> getUserInfo() async {
+    String? token = await _storage.read(key: 'auth_token');
+    // Gọi vào API /user có sẵn của Laravel
+    final response = await http.get(
+      Uri.parse('$baseUrl/user'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body); // Trả về {id, name, email...}
+    } else {
+      throw Exception('Không lấy được thông tin user');
+    }
+  }
+  // Hàm cập nhật hồ sơ
+  Future<void> updateProfile(String name, String? currentPassword, String? newPassword) async {
+    String? token = await _storage.read(key: 'auth_token');
+
+    Map<String, String> data = {'name': name};
+
+    // Nếu có đổi mật khẩu thì gửi cả mật khẩu cũ và mới đi
+    if (newPassword != null && newPassword.isNotEmpty) {
+      data['current_password'] = currentPassword ?? ""; // Gửi key này cho Laravel check
+      data['password'] = newPassword;
+      data['password_confirmation'] = newPassword;
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/user/update'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode != 200) {
+      final body = jsonDecode(response.body);
+      // Ném lỗi ra để màn hình hiển thị (VD: Mật khẩu cũ sai)
+      throw Exception(body['message'] ?? "Lỗi cập nhật hồ sơ");
+    }
+  }
 }
