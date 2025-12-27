@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:share_plus/share_plus.dart'; // <--- THÊM MỚI
 import 'package:image_converter_app/l10n/app_localizations.dart';
 import '../blocs/home_bloc.dart';
 import 'dart:convert';
@@ -37,7 +38,28 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
   String _getFullUrl(String? path) {
     if (path == null) return "";
     if (path.startsWith('http')) return path;
-    return "http://10.224.9.12:8000/storage/$path";
+    return "http://192.168.1.13:8000/storage/$path";
+  }
+
+  // --- HÀM CHIA SẺ FILE MỚI ---
+  Future<void> _shareFile(String url, String fileName) async {
+    setState(() => isDownloading = true);
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final tempPath = "${tempDir.path}/$fileName";
+      
+      await Dio().download(url, tempPath);
+      
+      if (!mounted) return;
+      await Share.shareXFiles([XFile(tempPath)], text: 'Gửi bạn tài liệu PDF');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi khi chia sẻ file"), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => isDownloading = false);
+    }
   }
 
   void _showRenameDialog(BuildContext context, String currentName, AppLocalizations lang) {
@@ -120,7 +142,6 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
     final isDark = theme.brightness == Brightness.dark;
     final document = widget.document;
 
-    // Tính toán dữ liệu
     final date = DateTime.parse(document['created_at']);
     final formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(date);
 
@@ -213,19 +234,6 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
                     indicatorWeight: 3,
                     labelColor: isDark ? Colors.white : theme.primaryColor,
                     unselectedLabelColor: isDark ? Colors.grey[500] : Colors.grey[600],
-                    labelStyle: TextStyle(fontWeight: FontWeight.w600),
-                    unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
-                    overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                          (Set<MaterialState> states) {
-                        if (states.contains(MaterialState.pressed)) {
-                          return theme.primaryColor.withOpacity(0.1);
-                        }
-                        if (states.contains(MaterialState.hovered)) {
-                          return theme.primaryColor.withOpacity(0.05);
-                        }
-                        return null;
-                      },
-                    ),
                     tabs: [
                       Tab(
                         icon: Icon(Icons.picture_as_pdf_rounded),
@@ -245,9 +253,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
         body: TabBarView(
           controller: _tabController,
           children: [
-            // TAB 1: PDF
             _buildPdfTab(context, document, sizeStr, formattedDate, pdfUrl, lang, theme, isDark),
-            // TAB 2: Ảnh gốc
             _buildImageTab(document, lang, isDark),
           ],
         ),
@@ -269,8 +275,6 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
       child: Column(
         children: [
           SizedBox(height: 20),
-
-          // PDF Preview Card
           Container(
             margin: EdgeInsets.symmetric(horizontal: 16),
             padding: EdgeInsets.all(30),
@@ -308,10 +312,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
               ],
             ),
           ),
-
           SizedBox(height: 25),
-
-          // Info Card
           Container(
             margin: EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
@@ -327,7 +328,6 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
             ),
             child: Column(
               children: [
-                // File name with edit button
                 Container(
                   padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -382,40 +382,52 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
                     ],
                   ),
                 ),
-
                 Divider(height: 1, color: isDark ? Colors.grey[800] : Colors.grey[200]),
-
-                // Info rows
-                _buildModernInfoRow(
-                  Icons.sd_storage_rounded,
-                  lang.fileSize ?? "Dung lượng",
-                  sizeStr,
-                  Colors.orange,
-                ),
+                _buildModernInfoRow(Icons.sd_storage_rounded, lang.fileSize ?? "Dung lượng", sizeStr, Colors.orange),
                 Divider(height: 1, indent: 70, color: isDark ? Colors.grey[800] : Colors.grey[200]),
-                _buildModernInfoRow(
-                  Icons.calendar_today_rounded,
-                  lang.createdDate ?? "Ngày tạo",
-                  formattedDate,
-                  Colors.green,
-                ),
+                _buildModernInfoRow(Icons.calendar_today_rounded, lang.createdDate ?? "Ngày tạo", formattedDate, Colors.green),
                 Divider(height: 1, indent: 70, color: isDark ? Colors.grey[800] : Colors.grey[200]),
-                _buildModernInfoRow(
-                  Icons.check_circle_rounded,
-                  lang.status ?? "Trạng thái",
-                  document['status'] == 'completed'
-                      ? (lang.completed ?? 'Hoàn thành')
-                      : (lang.processing ?? 'Đang xử lý'),
-                  document['status'] == 'completed' ? Colors.green : Colors.orange,
+                _buildModernInfoRow(Icons.check_circle_rounded, lang.status ?? "Trạng thái", document['status'] == 'completed' ? (lang.completed ?? 'Hoàn thành') : (lang.processing ?? 'Đang xử lý'), document['status'] == 'completed' ? Colors.green : Colors.orange),
+              ],
+            ),
+          ),
+          SizedBox(height: 25),
+          
+          // --- PHẦN THAY THẾ: NÚT DOWNLOAD VÀ NÚT SHARE NẰM CẠNH NHAU ---
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: _buildModernDownloadButton(pdfUrl, document['original_name'], lang, theme),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    height: 58, // Khớp chiều cao nút download
+                    child: ElevatedButton(
+                      onPressed: isDownloading ? null : () => _shareFile(pdfUrl, document['original_name']),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? Colors.grey[800] : Colors.white,
+                        foregroundColor: theme.primaryColor,
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          side: BorderSide(color: theme.primaryColor.withOpacity(0.5)),
+                        ),
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: isDownloading 
+                        ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        : Icon(Icons.share_rounded, size: 24),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-
-          SizedBox(height: 25),
-
-          // Download Button
-          _buildModernDownloadButton(pdfUrl, document['original_name'], lang, theme),
 
           SizedBox(height: 30),
         ],
@@ -475,55 +487,36 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
       AppLocalizations lang,
       ThemeData theme,
       ) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      child: ElevatedButton(
-        onPressed: isDownloading ? null : () => _downloadAndOpenFile(url, fileName, lang),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: theme.primaryColor,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: theme.primaryColor.withOpacity(0.5),
-          disabledForegroundColor: Colors.white70,
-          padding: EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          elevation: 3,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isDownloading)
-              SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            else
-              Icon(Icons.download_rounded, size: 24),
-            SizedBox(width: 12),
-            Text(
-              isDownloading
-                  ? (lang.downloading ?? "Đang tải...")
-                  : (lang.downloadAndOpen ?? "Tải xuống & Mở file"),
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
+    return ElevatedButton(
+      onPressed: isDownloading ? null : () => _downloadAndOpenFile(url, fileName, lang),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: theme.primaryColor,
+        foregroundColor: Colors.white,
+        disabledBackgroundColor: theme.primaryColor.withOpacity(0.5),
+        padding: EdgeInsets.symmetric(vertical: 18),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 3,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (isDownloading)
+            SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+          else
+            Icon(Icons.download_rounded, size: 24),
+          SizedBox(width: 12),
+          Text(
+            isDownloading ? (lang.downloading ?? "...") : (lang.downloadAndOpen ?? "Tải về"),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildImageTab(Map<String, dynamic> document, AppLocalizations lang, bool isDark) {
     var rawPath = document['original_path'];
-
-    if (rawPath == null) {
-      return _buildEmptyState(
-        Icons.image_not_supported_rounded,
-        lang.noOriginalImage ?? "Không tìm thấy ảnh gốc",
-      );
-    }
+    if (rawPath == null) return _buildEmptyState(Icons.image_not_supported_rounded, lang.noOriginalImage ?? "Không tìm thấy ảnh gốc");
 
     List<String> imagePaths = [];
     try {
@@ -533,12 +526,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
       imagePaths.add(rawPath.toString());
     }
 
-    if (imagePaths.isEmpty) {
-      return _buildEmptyState(
-        Icons.folder_open_rounded,
-        lang.oldFileNoImage ?? "File này cũ quá nên không có lưu ảnh gốc!",
-      );
-    }
+    if (imagePaths.isEmpty) return _buildEmptyState(Icons.folder_open_rounded, lang.oldFileNoImage ?? "Không có ảnh gốc!");
 
     return Container(
       color: isDark ? Colors.black : Colors.grey[900],
@@ -554,62 +542,13 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
                 Container(
                   margin: EdgeInsets.only(bottom: 12),
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    "${lang.image ?? "Ảnh"} ${index + 1}",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                  child: Text("${lang.image ?? "Ảnh"} ${index + 1}", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ClipRRect(
                 borderRadius: BorderRadius.circular(15),
                 child: InteractiveViewer(
-                  clipBehavior: Clip.none,
-                  minScale: 0.5,
-                  maxScale: 4.0,
-                  child: Image.network(
-                    imgUrl,
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        height: 200,
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.grey[850] : Colors.grey[800],
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      alignment: Alignment.center,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.broken_image_rounded, color: Colors.white54, size: 50),
-                          SizedBox(height: 10),
-                          Text(
-                            lang.imageError ?? "Lỗi tải ảnh",
-                            style: TextStyle(color: Colors.white54),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  child: Image.network(imgUrl, fit: BoxFit.contain),
                 ),
               ),
             ],
@@ -621,21 +560,13 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
 
   Widget _buildEmptyState(IconData icon, String message) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 80, color: isDark ? Colors.grey[600] : Colors.grey[400]),
           SizedBox(height: 20),
-          Text(
-            message,
-            style: TextStyle(
-              color: isDark ? Colors.grey[400] : Colors.grey[600],
-              fontSize: 16,
-            ),
-            textAlign: TextAlign.center,
-          ),
+          Text(message, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16), textAlign: TextAlign.center),
         ],
       ),
     );
@@ -645,90 +576,42 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
     setState(() => isDownloading = true);
     try {
       String savePath;
-
       if (Platform.isAndroid) {
         savePath = "/storage/emulated/0/Download/$fileName";
       } else {
         final dir = await getApplicationDocumentsDirectory();
         savePath = "${dir.path}/$fileName";
       }
-
       await Dio().download(url, savePath);
-
       if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("${lang.downloadedTo ?? "Đã tải về"}: Download/$fileName"),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
-
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lưu tại: Download/$fileName"), backgroundColor: Colors.green));
       await OpenFilex.open(savePath);
     } catch (e) {
       if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(lang.downloadError ?? "Lỗi tải file hoặc thiếu quyền truy cập"),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
-      print("Download error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lỗi tải file"), backgroundColor: Colors.red));
     } finally {
-      if (mounted) {
-        setState(() => isDownloading = false);
-      }
+      if (mounted) setState(() => isDownloading = false);
     }
   }
 
   void _showDeleteConfirm(BuildContext context, AppLocalizations lang) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: isDark ? Colors.grey[900] : Colors.white,
-        title: Row(
-          children: [
-            Icon(Icons.warning_rounded, color: Colors.red),
-            SizedBox(width: 10),
-            Text(
-              lang.confirmDelete ?? "Xác nhận xóa",
-              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-            ),
-          ],
-        ),
-        content: Text(
-          lang.confirmDeleteMessage ?? "Bạn có chắc muốn xóa file này không?",
-          style: TextStyle(color: isDark ? Colors.grey[300] : Colors.black87),
-        ),
+        title: Text(lang.confirmDelete ?? "Xóa file?", style: TextStyle(color: isDark ? Colors.white : Colors.black)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              lang.cancel ?? "Hủy",
-              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600]),
-            ),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text("Hủy")),
           ElevatedButton(
             onPressed: () {
               context.read<HomeBloc>().add(DeleteDocumentRequested(widget.document['id']));
               Navigator.pop(ctx);
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: Text(lang.delete ?? "Xóa"),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text("Xóa"),
           ),
         ],
       ),

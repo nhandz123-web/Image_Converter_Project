@@ -2,12 +2,16 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dio/dio.dart'; // Đảm bảo đã chạy: flutter pub add dio
 
 class DocumentService {
   // Thay đổi IP này giống bên AuthService (10.0.2.2 nếu máy ảo, IP LAN nếu máy thật)
-  final String baseUrl = "http://10.224.9.12:8000/api";
+  final String baseUrl = "http://192.168.1.13:8000/api";
   final _storage = const FlutterSecureStorage();
-
+  final Dio _dio = Dio();
+  DocumentService() {
+    _dio.options.baseUrl = baseUrl;
+  }
   // Hàm Upload ảnh
   Future<Map<String, dynamic>?> uploadImages(List<File> imageFiles) async {
     try {
@@ -40,6 +44,32 @@ class DocumentService {
     } catch (e) {
       print("Lỗi Service: $e");
       rethrow;
+    }
+  }
+
+    // --- HÀM GỘP PDF (Dùng Dio) ---
+  Future<Map<String, dynamic>> mergePdfs(List<int> documentIds) async {
+    try {
+      // Lấy token từ storage giống các hàm http bên dưới
+      String? token = await _storage.read(key: 'auth_token');
+
+      final response = await _dio.post(
+        '/documents/merge',
+        data: {
+          'document_ids': documentIds,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+      return response.data;
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? "Lỗi server khi gộp PDF");
+    } catch (e) {
+      throw Exception("Lỗi hệ thống: $e");
     }
   }
 

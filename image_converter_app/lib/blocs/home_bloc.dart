@@ -5,11 +5,32 @@ import '../services/document_service.dart';
 
 // --- Events ---
 abstract class HomeEvent {}
+
+// Chọn ảnh ban đầu (Từ nút bấm trên HomeScreen)
 class PickImageRequested extends HomeEvent {
-  final bool fromCamera; // True: Chụp ảnh, False: Chọn thư viện
+  final bool fromCamera;
   PickImageRequested(this.fromCamera);
 }
+
+// EVENT QUAN TRỌNG: Nhận danh sách ảnh đã qua Chỉnh sửa/Sắp xếp để Upload
+class UploadEditedImagesEvent extends HomeEvent {
+  final List<File> editedFiles;
+  UploadEditedImagesEvent(this.editedFiles);
+}
+
+// EVENT GỘP PDF: Nhận danh sách ID file PDF cần ghép
+class MergePdfsRequested extends HomeEvent {
+  final List<int> ids;
+  MergePdfsRequested(this.ids);
+}
+
 class LoadHistoryRequested extends HomeEvent {}
+
+class DeleteDocumentRequested extends HomeEvent {
+  final int id;
+  DeleteDocumentRequested(this.id);
+}
+
 class RenameDocumentRequested extends HomeEvent {
   final int id;
   final String newName;
@@ -19,10 +40,10 @@ class RenameDocumentRequested extends HomeEvent {
 // --- States ---
 abstract class HomeState {}
 class HomeInitial extends HomeState {}
-class HomeLoading extends HomeState {} // Đang xoay xoay
+class HomeLoading extends HomeState {}
 class HomeSuccess extends HomeState {
   final String message;
-  final String? imageUrl; // URL ảnh sau khi upload xong
+  final String? imageUrl;
   HomeSuccess(this.message, {this.imageUrl});
 }
 class HomeFailure extends HomeState {
@@ -34,11 +55,6 @@ class HistoryLoaded extends HomeState {
   HistoryLoaded(this.documents);
 }
 
-class DeleteDocumentRequested extends HomeEvent {
-  final int id;
-  DeleteDocumentRequested(this.id);
-}
-
 // --- Bloc ---
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final DocumentService _documentService = DocumentService();
@@ -46,21 +62,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   HomeBloc() : super(HomeInitial()) {
 
-    // Xử lý chọn ảnh và Upload luôn
+    // 1. Xử lý chọn ảnh (Sửa lại để chỉ chọn, không upload ngay để chờ Edit)
     on<PickImageRequested>((event, emit) async {
       try {
         List<XFile> images = [];
-
         if (event.fromCamera) {
-          // Camera: Vẫn chụp 1 tấm
           final XFile? photo = await _picker.pickImage(
             source: ImageSource.camera,
             imageQuality: 70,
           );
           if (photo != null) images.add(photo);
         } else {
-          // Thư viện: Dùng pickMultiImage (Chọn nhiều native)
-          // Hàm này siêu nhẹ, gọi giao diện gốc của máy
           images = await _picker.pickMultiImage(
             imageQuality: 70,
             maxWidth: 1024,
@@ -68,25 +80,42 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         }
 
         if (images.isNotEmpty) {
-          emit(HomeLoading());
-
-          // Chuyển đổi sang File
-          List<File> fileList = images.map((e) => File(e.path)).toList();
-
-          // Gọi Service Upload (dùng hàm uploadImages bạn đã sửa lúc nãy)
-          final result = await _documentService.uploadImages(fileList);
-
-          if (result != null) {
-            emit(HomeSuccess("Upload thành công ${images.length} ảnh!"));
-            add(LoadHistoryRequested());
-          }
+          // Sau khi chọn xong, HomeScreen sẽ điều hướng sang màn hình Edit.
+          // Sau khi Edit xong, HomeScreen sẽ gọi UploadEditedImagesEvent.
+          // Bạn có thể emit một state trung gian nếu muốn báo đã chọn xong.
         }
       } catch (e) {
-        emit(HomeFailure(e.toString()));
+        emit(HomeFailure("Lỗi chọn ảnh: ${e.toString()}"));
       }
     });
 
-    // Xử lý lấy lịch sử
+    // 2. Xử lý Upload sau khi đã Cắt ảnh (Crop) hoặc Sắp xếp
+    on<UploadEditedImagesEvent>((event, emit) async {
+      emit(HomeLoading());
+      try {
+        final result = await _documentService.uploadImages(event.editedFiles);
+        if (result != null) {
+          emit(HomeSuccess("Chuyển đổi thành công ${event.editedFiles.length} ảnh!"));
+          add(LoadHistoryRequested());
+        }
+      } catch (e) {
+        emit(HomeFailure("Lỗi upload: ${e.toString()}"));
+      }
+    });
+
+    // 3. Xử lý Gộp PDF (Ghép file)
+    on<MergePdfsRequested>((event, emit) async {
+      emit(HomeLoading());
+      try {
+        await _documentService.mergePdfs(event.ids);
+        emit(HomeSuccess("Ghép file PDF thành công!"));
+        add(LoadHistoryRequested());
+      } catch (e) {
+        emit(HomeFailure("Lỗi ghép file: ${e.toString()}"));
+      }
+    });
+
+    // 4. Xử lý lấy lịch sử (Giữ nguyên code cũ)
     on<LoadHistoryRequested>((event, emit) async {
       try {
         emit(HomeLoading());
@@ -97,24 +126,20 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     });
 
+    // 5. Xử lý xóa (Giữ nguyên code cũ)
     on<DeleteDocumentRequested>((event, emit) async {
       try {
-        // Không emit(HomeLoading) để tránh màn hình bị nháy, chỉ xóa ngầm
         await _documentService.deleteDocument(event.id);
-
-        // Xóa xong thì load lại danh sách mới
         add(LoadHistoryRequested());
-
-        // (Tùy chọn) Có thể emit một State thông báo xóa thành công nếu muốn
       } catch (e) {
         emit(HomeFailure("Không xóa được: ${e.toString()}"));
       }
     });
 
+    // 6. Xử lý đổi tên (Giữ nguyên code cũ)
     on<RenameDocumentRequested>((event, emit) async {
       try {
         await _documentService.renameDocument(event.id, event.newName);
-        // Đổi tên xong thì load lại danh sách để cập nhật tên mới
         add(LoadHistoryRequested());
         emit(HomeSuccess("Đổi tên thành công!"));
       } catch (e) {
