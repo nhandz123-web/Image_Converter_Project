@@ -4,30 +4,28 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Document;
-use Illuminate\Support\Facades\Storage; // Nhớ import cái này để lưu file
+use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use setasign\Fpdi\Fpdi; // Import thêm thư viện gộp PDF
 
 class DocumentController extends Controller
 {
-    // API: Upload ảnh và tạo yêu cầu chuyển đổi
+    // API: Upload ảnh và tạo PDF từ ảnh
     public function upload(Request $request)
     {
         set_time_limit(300);
         ini_set('memory_limit', '512M');
 
-        // Validate: Cho phép gửi mảng 'images[]'
         $request->validate([
             'images' => 'required',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240', // Validate từng ảnh
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         try {
             $user = $request->user();
-            
-            // Kiểm tra xem input là 1 file hay nhiều file
             $files = $request->file('images');
             if (!is_array($files)) {
-                $files = [$files]; // Nếu gửi 1 file thì biến nó thành mảng
+                $files = [$files];
             }
 
             $htmlContent = '';
@@ -35,53 +33,43 @@ class DocumentController extends Controller
             $totalSize = 0;
             $firstFileName = pathinfo($files[0]->getClientOriginalName(), PATHINFO_FILENAME);
 
-            // --- VÒNG LẶP XỬ LÝ TỪNG ẢNH ---
             foreach ($files as $index => $file) {
                 $originalName = $file->getClientOriginalName();
-                $fileSize = $file->getSize();
-                $totalSize += $fileSize;
+                $totalSize += $file->getSize();
 
-                // 1. Lưu ảnh gốc
                 $imageName = time() . "_{$index}_" . $originalName;
                 $originalPath = $file->storeAs('uploads', $imageName, 'public');
-                $originalPaths[] = $originalPath; // Lưu vào danh sách đường dẫn
+                $originalPaths[] = $originalPath;
 
-                // 2. Chuẩn bị HTML cho PDF
                 $fullPath = storage_path('app/public/' . $originalPath);
                 $imageData = base64_encode(file_get_contents($fullPath));
                 $src = 'data:' . $file->getMimeType() . ';base64,' . $imageData;
 
-                // Thêm ngắt trang (page-break) trừ trang cuối
                 $pageBreak = ($index < count($files) - 1) ? 'page-break-after: always;' : '';
-                
                 $htmlContent .= '<div style="text-align: center; width: 100%; height: 100%; ' . $pageBreak . '">
                                     <img src="' . $src . '" style="max-width: 100%; max-height: 100%;">
                                  </div>';
             }
 
-            // 3. Tạo file PDF từ chuỗi HTML đã ghép
             $pdfName = time() . '_' . $firstFileName . '_merged.pdf';
             $pdf = Pdf::loadHTML($htmlContent)->setPaper('a4', 'portrait');
-            
             $pdfPath = 'uploads/' . $pdfName;
-            Storage::disk('public')->put($pdfPath, $pdf->output());
             
+            Storage::disk('public')->put($pdfPath, $pdf->output());
             $totalSize += Storage::disk('public')->size($pdfPath);
 
-            // 4. Lưu vào Database
-            // original_path bây giờ sẽ lưu dạng JSON Array (VD: ["path1.jpg", "path2.jpg"])
             $document = Document::create([
                 'user_id' => $user->id,
                 'original_name' => $firstFileName . '.pdf',
                 'path' => $pdfPath,
-                'original_path' => json_encode($originalPaths), // <--- LƯU DẠNG JSON
+                'original_path' => json_encode($originalPaths),
                 'status' => 'completed',
                 'type' => 'pdf',
                 'size' => $totalSize,
             ]);
 
             return response()->json([
-                'message' => 'Upload thành công ' . count($files) . ' ảnh!',
+                'message' => 'Upload và chuyển đổi thành công!',
                 'document' => $document,
             ], 200);
 
@@ -90,85 +78,127 @@ class DocumentController extends Controller
         }
     }
 
-    // API: Xóa tài liệu (Xóa DB + Xóa file PDF + Xóa file Gốc)
+    // --- API MỚI: GỘP CÁC FILE PDF CÓ SẴN ---
+    public function mergePdfs(Request $request)
+    {
+        $request->validate([
+            'document_ids' => 'required|array|min:2',
+        ]);
+
+        try {
+            $user = $request->user();
+            $documents = Document::where('user_id', $user->id)
+                                 ->whereIn('id', $request->document_ids)
+                                 ->get();
+
+            if ($documents->count() < 2) {
+                return response()->json(['message' => 'Cần ít nhất 2 file để gộp'], 400);
+            }
+
+            $pdf = new Fpdi();
+            $mergedOriginalPaths = [];
+
+            foreach ($documents as $doc) {
+                $filePath = storage_path('app/public/' . $doc->path);
+                
+                if (!file_exists($filePath)) continue;
+
+                // Lưu lại danh sách ảnh gốc từ các file cũ (nếu có)
+                if ($doc->original_path) {
+                    $paths = json_decode($doc->original_path, true);
+                    if (is_array($paths)) {
+                        $mergedOriginalPaths = array_merge($mergedOriginalPaths, $paths);
+                    }
+                }
+
+                $pageCount = $pdf->setSourceFile($filePath);
+                for ($i = 1; $i <= $pageCount; $i++) {
+                    $tplIdx = $pdf->importPage($i);
+                    $specs = $pdf->getTemplateSize($tplIdx);
+                    $pdf->AddPage($specs['orientation'], [$specs['width'], $specs['height']]);
+                    $pdf->useTemplate($tplIdx);
+                }
+            }
+
+            $fileName = 'combined_' . time() . '.pdf';
+            $outputPath = 'uploads/' . $fileName;
+            Storage::disk('public')->put($outputPath, $pdf->Output('S'));
+
+            $newDoc = Document::create([
+                'user_id' => $user->id,
+                'original_name' => 'Gộp_' . time() . '.pdf',
+                'path' => $outputPath,
+                'original_path' => json_encode($mergedOriginalPaths),
+                'status' => 'completed',
+                'type' => 'pdf',
+                'size' => Storage::disk('public')->size($outputPath),
+            ]);
+
+            return response()->json([
+                'message' => 'Gộp file thành công!',
+                'document' => $newDoc
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Lỗi khi gộp: ' . $e->getMessage()], 500);
+        }
+    }
+
+    // API: Xóa tài liệu
     public function destroy(Request $request, $id)
     {
         $user = $request->user();
-        // Tìm file của đúng user đó
         $document = Document::where('user_id', $user->id)->where('id', $id)->first();
 
         if (!$document) {
             return response()->json(['message' => 'Không tìm thấy file'], 404);
         }
 
-        // 1. Xóa file PDF kết quả (nếu có)
-        if ($document->path && Storage::disk('public')->exists($document->path)) {
+        // 1. Xóa file kết quả
+        if ($document->path) {
             Storage::disk('public')->delete($document->path);
         }
 
-        // 2. Xóa file ẢNH GỐC (nếu có) <--- ĐOẠN MỚI THÊM
-        if ($document->original_path && Storage::disk('public')->exists($document->original_path)) {
-            Storage::disk('public')->delete($document->original_path);
+        // 2. Xóa tất cả ảnh gốc (vì original_path là mảng JSON)
+        if ($document->original_path) {
+            $paths = json_decode($document->original_path, true);
+            if (is_array($paths)) {
+                foreach ($paths as $p) {
+                    Storage::disk('public')->delete($p);
+                }
+            }
         }
 
-        // 3. Xóa dữ liệu trong Database
         $document->delete();
-
-        return response()->json([
-            'message' => 'Đã xóa hoàn toàn tài liệu và file gốc!'
-        ]);
+        return response()->json(['message' => 'Đã xóa hoàn toàn!']);
     }
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'name' => 'required|string|max:255', // Tên mới không được để trống
-        ]);
+        $request->validate(['name' => 'required|string|max:255']);
+        $document = Document::where('user_id', auth()->id())->where('id', $id)->first();
+        if (!$document) return response()->json(['message' => 'Không thấy file'], 404);
 
-        $user = $request->user();
-        $document = Document::where('user_id', $user->id)->where('id', $id)->first();
-
-        if (!$document) {
-            return response()->json(['message' => 'Không tìm thấy file'], 404);
-        }
-
-        // Cập nhật tên mới vào cột original_name
-        // (Lưu ý: Bạn có thể giữ đuôi file hoặc cho người dùng đổi luôn tùy thích)
         $document->original_name = $request->name;
         $document->save();
 
-        return response()->json([
-            'message' => 'Đổi tên thành công!',
-            'document' => $document
-        ]);
+        return response()->json(['message' => 'Đổi tên thành công!', 'document' => $document]);
     }
 
-    // API: Lấy danh sách lịch sử của User
     public function index(Request $request)
     {
-        $user = $request->user();
-        // Lấy danh sách file của user đó, sắp xếp mới nhất lên đầu
-        $documents = Document::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json([
-            'documents' => $documents
-        ]);
+        $documents = Document::where('user_id', auth()->id())->orderBy('created_at', 'desc')->get();
+        return response()->json(['documents' => $documents]);
     }
-    // API: Lấy thông tin dung lượng
+
     public function storageInfo(Request $request)
     {
-        $user = $request->user();
-
-        // Tính tổng size
-        $usedBytes = Document::where('user_id', $user->id)->sum('size');
-        $totalBytes = 1 * 1024 * 1024 * 1024; // 1GB
-
+        $usedBytes = Document::where('user_id', auth()->id())->sum('size');
+        $totalBytes = 1024 * 1024 * 1024; // 1GB
         return response()->json([
             'used_bytes' => (int)$usedBytes,
             'total_bytes' => $totalBytes,
-            'percentage' => round(($usedBytes / $totalBytes) * 100, 2) // Tính phần trăm
+            'percentage' => round(($usedBytes / $totalBytes) * 100, 2)
         ]);
     }
 }

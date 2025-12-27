@@ -12,6 +12,10 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+// routes/api.php
+Route::middleware('auth:api')->group(function () {
+    Route::post('/documents/merge', [DocumentController::class, 'mergePdfs']);
+});
 Route::middleware('auth:api')->group(function () { 
 
     // Route cập nhật thông tin user
