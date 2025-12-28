@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
   // 10.0.2.2 là localhost của máy tính khi nhìn từ máy ảo Android
-  final String baseUrl = "http://192.168.1.13:8000/api";
+  final String baseUrl = "http://10.224.9.12:8000/api";
 
   final Dio _dio = Dio(BaseOptions(
   connectTimeout: const Duration(seconds: 5), // 5 giây không kết nối được thì báo lỗi

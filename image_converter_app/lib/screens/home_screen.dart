@@ -8,9 +8,9 @@ import 'settings_screen.dart';
 import 'file_detail_screen.dart';
 import 'all_documents_screen.dart';
 import 'profile_screen.dart';
-import 'dart:io'; // Để hiểu class File
-import 'package:image_picker/image_picker.dart'; // Để dùng ImagePicker
-import 'edit_image_screen.dart'; // Đường dẫn đến file chỉnh sửa bạn vừa tạo
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'edit_image_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -33,6 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<HomeBloc>().add(LoadHistoryRequested());
     setState(() => selectedIds = []); // Reset danh sách chọn cũ
 
+    final bool isDark = theme.brightness == Brightness.dark;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -48,50 +50,177 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Column(
                 children: [
+                  // ═══════════ DRAG HANDLE ═══════════
                   Container(
                     margin: EdgeInsets.only(top: 12),
-                    width: 40, height: 4,
-                    decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Text(
-                      lang.mergePdf ?? "Ghép file PDF",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
+
+                  // ═══════════ HEADER ═══════════
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          lang.mergePdf ?? "Merge PDF",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (selectedIds.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              "${lang.mergeOrderSelected ?? "Merge order"}: ${selectedIds.length} ${lang.filesSelected ?? "files selected"}",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  // ═══════════ PDF LIST ═══════════
                   Expanded(
                     child: BlocBuilder<HomeBloc, HomeState>(
                       builder: (context, state) {
                         if (state is HistoryLoaded) {
                           // Lọc chỉ lấy các file PDF trong lịch sử
-                          final pdfFiles = state.documents.where((d) => 
-                            d['type'] == 'pdf' || d['original_name'].toString().toLowerCase().endsWith('.pdf')
+                          final pdfFiles = state.documents.where((d) =>
+                          d['type'] == 'pdf' ||
+                              d['original_name'].toString().toLowerCase().endsWith('.pdf')
                           ).toList();
 
                           if (pdfFiles.isEmpty) {
-                            return Center(child: Text(lang.noFiles ?? "Không có file PDF nào"));
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.picture_as_pdf_outlined,
+                                    size: 64,
+                                    color: Colors.grey[400],
+                                  ),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    lang.noPdfFiles ?? "No PDF files available",
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+                            );
                           }
 
                           return ListView.builder(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
                             itemCount: pdfFiles.length,
                             itemBuilder: (context, index) {
                               final doc = pdfFiles[index];
-                              final bool isSelected = selectedIds.contains(doc['id']);
-                              return CheckboxListTile(
-                                activeColor: Colors.purple,
-                                title: Text(doc['original_name'], maxLines: 1, overflow: TextOverflow.ellipsis),
-                                secondary: Icon(Icons.picture_as_pdf, color: Colors.red),
-                                value: isSelected,
-                                onChanged: (val) {
-                                  setModalState(() {
-                                    if (val == true) {
-                                      selectedIds.add(doc['id']);
-                                    } else {
-                                      selectedIds.remove(doc['id']);
-                                    }
-                                  });
-                                },
+                              final docId = doc['id'];
+                              final bool isSelected = selectedIds.contains(docId);
+
+                              // ★ TÍNH THỨ TỰ CHỌN (bắt đầu từ 1)
+                              final int selectionOrder = isSelected
+                                  ? selectedIds.indexOf(docId) + 1
+                                  : 0;
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () {
+                                      setModalState(() {
+                                        if (isSelected) {
+                                          selectedIds.remove(docId);
+                                        } else {
+                                          selectedIds.add(docId);
+                                        }
+                                      });
+                                    },
+                                    child: AnimatedContainer(
+                                      duration: Duration(milliseconds: 200),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? Colors.purple.withOpacity(0.1)
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? Colors.purple
+                                              : Colors.grey.withOpacity(0.3),
+                                          width: isSelected ? 2 : 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          // ═══ PDF ICON ═══
+                                          Container(
+                                            padding: EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.withOpacity(0.1),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Icon(
+                                              Icons.picture_as_pdf,
+                                              color: Colors.red,
+                                              size: 24,
+                                            ),
+                                          ),
+                                          SizedBox(width: 12),
+
+                                          // ═══ FILE NAME ═══
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  doc['original_name'],
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontWeight: isSelected
+                                                        ? FontWeight.w600
+                                                        : FontWeight.normal,
+                                                  ),
+                                                ),
+                                                if (isSelected)
+                                                  Text(
+                                                    "${lang.orderNumber ?? "Order"}: $selectionOrder",
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.purple,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(width: 12),
+
+                                          // ═══ ★ SELECTION ORDER BADGE ═══
+                                          _buildSelectionBadge(
+                                            isSelected: isSelected,
+                                            order: selectionOrder,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               );
                             },
                           );
@@ -100,6 +229,100 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   ),
+
+                  // ═══════════ SELECTED FILES PREVIEW ═══════════
+                  if (selectedIds.isNotEmpty)
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${lang.mergeOrder ?? "Merge order"}:",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: BlocBuilder<HomeBloc, HomeState>(
+                              builder: (context, state) {
+                                if (state is HistoryLoaded) {
+                                  return Row(
+                                    children: List.generate(selectedIds.length, (index) {
+                                      final docId = selectedIds[index];
+                                      final doc = state.documents.firstWhere(
+                                            (d) => d['id'] == docId,
+                                        orElse: () => {'original_name': lang.unknown ?? 'Unknown'},
+                                      );
+                                      return Container(
+                                        margin: EdgeInsets.only(right: 8),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.purple.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(20),
+                                          border: Border.all(color: Colors.purple),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 10,
+                                              backgroundColor: Colors.purple,
+                                              child: Text(
+                                                "${index + 1}",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(width: 6),
+                                            ConstrainedBox(
+                                              constraints: BoxConstraints(maxWidth: 100),
+                                              child: Text(
+                                                doc['original_name'],
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(fontSize: 12),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }),
+                                  );
+                                }
+                                return SizedBox();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // ═══════════ HELPER TEXT ═══════════
+                  if (selectedIds.length < 2)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        lang.selectAtLeast2Files ?? "Please select at least 2 files to merge",
+                        style: TextStyle(
+                          color: Colors.orange[700],
+                          fontSize: 13,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+
+                  // ═══════════ MERGE BUTTON ═══════════
                   Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: ElevatedButton(
@@ -107,16 +330,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         backgroundColor: Colors.purple,
                         foregroundColor: Colors.white,
                         minimumSize: Size(double.infinity, 55),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: selectedIds.length < 2 ? 0 : 4,
                       ),
-                      onPressed: selectedIds.length < 2 ? null : () {
-                        // Gọi sự kiện gộp PDF trong Bloc
-                        context.read<HomeBloc>().add(MergePdfsRequested(selectedIds));
+                      onPressed: selectedIds.length < 2
+                          ? null
+                          : () {
+                        context.read<HomeBloc>().add(
+                          MergePdfsRequested(selectedIds),
+                        );
                         Navigator.pop(modalContext);
                       },
-                      child: Text(
-                        "${lang.mergePdf ?? "Gộp ngay"} (${selectedIds.length})",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.merge_type),
+                          SizedBox(width: 8),
+                          Text(
+                            "${lang.mergeNow ?? "Merge now"} (${selectedIds.length})",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -128,6 +367,53 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
+
+// ═══════════════════════════════════════════════════════════════
+//              ★ SELECTION BADGE WIDGET ★
+// ═══════════════════════════════════════════════════════════════
+  Widget _buildSelectionBadge({
+    required bool isSelected,
+    required int order,
+  }) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 200),
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.purple : Colors.transparent,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isSelected ? Colors.purple : Colors.grey.withOpacity(0.5),
+          width: 2,
+        ),
+        boxShadow: isSelected
+            ? [
+          BoxShadow(
+            color: Colors.purple.withOpacity(0.3),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ]
+            : null,
+      ),
+      child: Center(
+        child: isSelected
+            ? Text(
+          "$order",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        )
+            : null,
+      ),
+    );
+  }
+
+// ═══════════════════════════════════════════════════════════════
+//              ★ SELECTION BADGE WIDGET ★
+// ═══════════════════════════════════════════════════════════════
 
   @override
   Widget build(BuildContext context) {

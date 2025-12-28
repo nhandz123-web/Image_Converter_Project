@@ -81,7 +81,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get fillAllFields => 'Vui lòng nhập đủ thông tin';
 
   @override
-  String get passwordNotMatch => 'Mật khẩu nhập lại không khớp';
+  String get passwordNotMatch => 'Mật khẩu xác nhận không khớp';
 
   @override
   String get pdfTools => 'Công cụ PDF';
@@ -252,7 +252,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get storage => 'dung lượng';
 
   @override
-  String get editProfile => 'Chỉnh sửa thông tin';
+  String get editProfile => 'Chỉnh sửa hồ sơ';
 
   @override
   String get appSettings => 'Cài đặt ứng dụng';
@@ -265,4 +265,110 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get logoutMessage => 'Bạn có chắc chắn muốn đăng xuất?';
+
+  @override
+  String get mergeOrderSelected => 'Thứ tự ghép';
+
+  @override
+  String get filesSelected => 'file đã chọn';
+
+  @override
+  String get noPdfFiles => 'Không có file PDF nào';
+
+  @override
+  String get orderNumber => 'Thứ tự';
+
+  @override
+  String get mergeOrder => 'Thứ tự ghép';
+
+  @override
+  String get mergeNow => 'Gộp ngay';
+
+  @override
+  String get selectAtLeast2Files => 'Vui lòng chọn ít nhất 2 file để ghép';
+
+  @override
+  String get unknown => 'Không xác định';
+
+  @override
+  String get basicInfo => 'Thông tin cơ bản';
+
+  @override
+  String get pleaseEnterName => 'Vui lòng nhập tên';
+
+  @override
+  String get changePassword => 'Đổi mật khẩu';
+
+  @override
+  String get changePasswordHint =>
+      'Nhập mật khẩu cũ để xác thực nếu muốn đổi mật khẩu mới';
+
+  @override
+  String get currentPassword => 'Mật khẩu hiện tại';
+
+  @override
+  String get needCurrentPassword => 'Cần nhập mật khẩu cũ để xác thực';
+
+  @override
+  String get newPasswordOptional => 'Mật khẩu mới (Tùy chọn)';
+
+  @override
+  String get passwordMinLength => 'Mật khẩu phải từ 6 ký tự';
+
+  @override
+  String get confirmNewPassword => 'Nhập lại mật khẩu mới';
+
+  @override
+  String get saveChanges => 'Lưu thay đổi';
+
+  @override
+  String get updateSuccess => 'Cập nhật thành công!';
+
+  @override
+  String get display => 'Hiển thị';
+
+  @override
+  String get darkMode => 'Chế độ tối';
+
+  @override
+  String get enabled => 'Đang bật';
+
+  @override
+  String get disabled => 'Đang tắt';
+
+  @override
+  String get fontSize => 'Cỡ chữ';
+
+  @override
+  String get fontSizeHint => 'Kéo thanh trượt để thay đổi cỡ chữ';
+
+  @override
+  String get languageRegion => 'Ngôn ngữ & Khu vực';
+
+  @override
+  String get quickSelect => 'Chọn nhanh';
+
+  @override
+  String get defaultSize => 'Mặc định';
+
+  @override
+  String get preview => 'Xem trước';
+
+  @override
+  String get sampleText => 'Đây là văn bản mẫu';
+
+  @override
+  String get maxLimitReached => 'Đã đạt giới hạn tối đa';
+
+  @override
+  String get max => 'Tối đa';
+
+  @override
+  String get about => 'Thông tin';
+
+  @override
+  String get version => 'Phiên bản';
+
+  @override
+  String get developer => 'Nhà phát triển';
 }

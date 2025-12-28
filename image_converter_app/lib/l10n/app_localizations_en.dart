@@ -60,7 +60,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createAccount => 'Create new account';
 
   @override
-  String get fullName => 'Full name';
+  String get fullName => 'Full Name';
 
   @override
   String get enterFullName => 'Enter your full name';
@@ -81,7 +81,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fillAllFields => 'Please fill in all fields';
 
   @override
-  String get passwordNotMatch => 'Passwords do not match';
+  String get passwordNotMatch => 'Password confirmation does not match';
 
   @override
   String get pdfTools => 'PDF Tools';
@@ -266,4 +266,111 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logoutMessage => 'Are you sure you want to logout?';
+
+  @override
+  String get mergeOrderSelected => 'Merge order';
+
+  @override
+  String get filesSelected => 'files selected';
+
+  @override
+  String get noPdfFiles => 'No PDF files available';
+
+  @override
+  String get orderNumber => 'Order';
+
+  @override
+  String get mergeOrder => 'Merge order';
+
+  @override
+  String get mergeNow => 'Merge now';
+
+  @override
+  String get selectAtLeast2Files => 'Please select at least 2 files to merge';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get basicInfo => 'Basic Information';
+
+  @override
+  String get pleaseEnterName => 'Please enter your name';
+
+  @override
+  String get changePassword => 'Change Password';
+
+  @override
+  String get changePasswordHint =>
+      'Enter current password to verify if you want to change password';
+
+  @override
+  String get currentPassword => 'Current Password';
+
+  @override
+  String get needCurrentPassword =>
+      'Current password required for verification';
+
+  @override
+  String get newPasswordOptional => 'New Password (Optional)';
+
+  @override
+  String get passwordMinLength => 'Password must be at least 6 characters';
+
+  @override
+  String get confirmNewPassword => 'Confirm New Password';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get updateSuccess => 'Updated successfully!';
+
+  @override
+  String get display => 'Display';
+
+  @override
+  String get darkMode => 'Dark Mode';
+
+  @override
+  String get enabled => 'Enabled';
+
+  @override
+  String get disabled => 'Disabled';
+
+  @override
+  String get fontSize => 'Font Size';
+
+  @override
+  String get fontSizeHint => 'Drag the slider to change font size';
+
+  @override
+  String get languageRegion => 'Language & Region';
+
+  @override
+  String get quickSelect => 'Quick select';
+
+  @override
+  String get defaultSize => 'Default';
+
+  @override
+  String get preview => 'Preview';
+
+  @override
+  String get sampleText => 'This is sample text';
+
+  @override
+  String get maxLimitReached => 'Maximum limit reached';
+
+  @override
+  String get max => 'Max';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get developer => 'Developer';
 }

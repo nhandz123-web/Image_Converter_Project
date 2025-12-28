@@ -203,7 +203,7 @@ abstract class AppLocalizations {
   /// No description provided for @fullName.
   ///
   /// In en, this message translates to:
-  /// **'Full name'**
+  /// **'Full Name'**
   String get fullName;
 
   /// No description provided for @enterFullName.
@@ -245,7 +245,7 @@ abstract class AppLocalizations {
   /// No description provided for @passwordNotMatch.
   ///
   /// In en, this message translates to:
-  /// **'Passwords do not match'**
+  /// **'Password confirmation does not match'**
   String get passwordNotMatch;
 
   /// No description provided for @pdfTools.
@@ -613,6 +613,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to logout?'**
   String get logoutMessage;
+
+  /// No description provided for @mergeOrderSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge order'**
+  String get mergeOrderSelected;
+
+  /// No description provided for @filesSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'files selected'**
+  String get filesSelected;
+
+  /// No description provided for @noPdfFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'No PDF files available'**
+  String get noPdfFiles;
+
+  /// No description provided for @orderNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get orderNumber;
+
+  /// No description provided for @mergeOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge order'**
+  String get mergeOrder;
+
+  /// No description provided for @mergeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge now'**
+  String get mergeNow;
+
+  /// No description provided for @selectAtLeast2Files.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select at least 2 files to merge'**
+  String get selectAtLeast2Files;
+
+  /// No description provided for @unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// No description provided for @basicInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Information'**
+  String get basicInfo;
+
+  /// No description provided for @pleaseEnterName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your name'**
+  String get pleaseEnterName;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Password'**
+  String get changePassword;
+
+  /// No description provided for @changePasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter current password to verify if you want to change password'**
+  String get changePasswordHint;
+
+  /// No description provided for @currentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Password'**
+  String get currentPassword;
+
+  /// No description provided for @needCurrentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password required for verification'**
+  String get needCurrentPassword;
+
+  /// No description provided for @newPasswordOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password (Optional)'**
+  String get newPasswordOptional;
+
+  /// No description provided for @passwordMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters'**
+  String get passwordMinLength;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get confirmNewPassword;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// No description provided for @updateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated successfully!'**
+  String get updateSuccess;
+
+  /// No description provided for @display.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get display;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get darkMode;
+
+  /// No description provided for @enabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get enabled;
+
+  /// No description provided for @disabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get disabled;
+
+  /// No description provided for @fontSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Font Size'**
+  String get fontSize;
+
+  /// No description provided for @fontSizeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag the slider to change font size'**
+  String get fontSizeHint;
+
+  /// No description provided for @languageRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'Language & Region'**
+  String get languageRegion;
+
+  /// No description provided for @quickSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick select'**
+  String get quickSelect;
+
+  /// No description provided for @defaultSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultSize;
+
+  /// No description provided for @preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get preview;
+
+  /// No description provided for @sampleText.
+  ///
+  /// In en, this message translates to:
+  /// **'This is sample text'**
+  String get sampleText;
+
+  /// No description provided for @maxLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum limit reached'**
+  String get maxLimitReached;
+
+  /// No description provided for @max.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get max;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get version;
+
+  /// No description provided for @developer.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer'**
+  String get developer;
 }
 
 class _AppLocalizationsDelegate
