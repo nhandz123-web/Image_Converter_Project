@@ -4,6 +4,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+
+// Dòng này bạn đã chạy được (Gửi mail)
+Route::post('/password/email', [ForgotPasswordController::class, 'sendResetCode']);
+// Dòng này dành cho nút "Đổi mật khẩu" - Hãy kiểm tra kỹ tên hàm resetPassword
+Route::post('/password/reset', [ForgotPasswordController::class, 'resetPassword']);
+
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

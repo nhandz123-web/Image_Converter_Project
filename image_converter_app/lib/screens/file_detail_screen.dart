@@ -38,7 +38,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
   String _getFullUrl(String? path) {
     if (path == null) return "";
     if (path.startsWith('http')) return path;
-    return "http://10.224.9.12:8000/storage/$path";
+    return "http://192.168.1.13:8000/storage/$path";
   }
 
   // --- HÀM CHIA SẺ FILE MỚI ---

@@ -20,6 +20,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // 1. Khai báo danh sách ID được chọn để gộp PDF
   List<int> selectedIds = [];
+  String _searchQuery = "";
+// Thêm controller để điều khiển ô nhập liệu
+final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -482,42 +485,54 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildWelcomeCard(isDark, lang),
-                          SizedBox(height: 20),
-                          _buildSectionTitle(theme, lang.popularTools ?? "Công cụ phổ biến"),
-                          SizedBox(height: 6),
-                          GridView.builder(
-                            physics: NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: tools.length,
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.85,
-                            ),
-                            itemBuilder: (context, index) => _buildToolCard(tools[index], theme, lang),
-                          ),
-                          SizedBox(height: 25),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildSectionTitle(theme, lang.recentDocuments ?? "Tài liệu gần đây"),
-                              TextButton(
-                                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AllDocumentsScreen())),
-                                child: Text(lang.viewAll ?? "Xem tất cả", style: TextStyle(fontWeight: FontWeight.w600)),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 6),
-                          _buildHistoryList(state, theme, lang),
-                          SizedBox(height: 30),
-                        ],
-                      ),
-                    ),
-                  ),
+  child: Padding(
+    padding: const EdgeInsets.all(16.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildWelcomeCard(isDark, lang),
+        const SizedBox(height: 20),
+        _buildSectionTitle(theme, lang.popularTools ?? "Công cụ phổ biến"),
+        const SizedBox(height: 6),
+        GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: tools.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.85,
+          ),
+          itemBuilder: (context, index) => _buildToolCard(tools[index], theme, lang),
+        ),
+        const SizedBox(height: 25),
+        
+        // --- PHẦN TIÊU ĐỀ TÀI LIỆU GẦN ĐÂY ---
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionTitle(theme, lang.recentDocuments ?? "Tài liệu gần đây"),
+            TextButton(
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AllDocumentsScreen())),
+              child: Text(lang.viewAll ?? "Xem tất cả", style: const TextStyle(fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+
+        // --- BƯỚC MỚI: CHÈN THANH TÌM KIẾM TẠI ĐÂY ---
+        _buildSearchBar(theme, isDark), 
+
+        const SizedBox(height: 12), // Khoảng cách nhẹ dưới thanh search
+        
+        // --- DANH SÁCH LỊCH SỬ ---
+        _buildHistoryList(state, theme, lang),
+        
+        const SizedBox(height: 30),
+      ],
+    ),
+  ),
+),
                 ],
               ),
               if (isLoading) _buildLoadingOverlay(theme, lang),
@@ -602,6 +617,40 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  Widget _buildSearchBar(ThemeData theme, bool isDark) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: isDark ? Colors.grey[850] : Colors.white,
+      borderRadius: BorderRadius.circular(15),
+      border: Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+    ),
+    child: TextField(
+      controller: _searchController,
+      onChanged: (value) {
+        setState(() {
+          _searchQuery = value.toLowerCase(); // Cập nhật từ khóa tìm kiếm
+        });
+      },
+      decoration: InputDecoration(
+        hintText: "Tìm kiếm tên file...",
+        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+        border: InputBorder.none,
+        icon: Icon(Icons.search, color: theme.primaryColor),
+        suffixIcon: _searchQuery.isNotEmpty 
+          ? IconButton(
+              icon: const Icon(Icons.clear, size: 20),
+              onPressed: () {
+                _searchController.clear();
+                setState(() => _searchQuery = "");
+              },
+            )
+          : null,
+      ),
+    ),
+  );
+}
 
   void _showImageSourceModal(AppLocalizations lang, ThemeData theme) {
     showModalBottomSheet(
@@ -703,31 +752,70 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHistoryList(HomeState state, ThemeData theme, AppLocalizations lang) {
-    if (state is HistoryLoaded) {
-      if (state.documents.isEmpty) return Center(child: Text(lang.noFiles ?? "Chưa có file nào"));
-      final displayDocs = state.documents.take(5).toList();
-      return ListView.builder(
-        shrinkWrap: true, physics: NeverScrollableScrollPhysics(),
-        itemCount: displayDocs.length,
-        itemBuilder: (context, index) {
-          final doc = displayDocs[index];
-          bool isPdf = doc['type'] == 'pdf' || doc['original_name'].toString().toLowerCase().endsWith('.pdf');
-          return Card(
-            margin: EdgeInsets.only(bottom: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            child: ListTile(
-              leading: Icon(isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded, color: isPdf ? Colors.red : Colors.blue),
-              title: Text(doc['original_name'], maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle: Text(doc['created_at'].toString().substring(0, 10)),
-              trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => FileDetailScreen(document: doc))),
-            ),
-          );
-        },
+  if (state is HistoryLoaded) {
+    // 1. LỌC: Tìm các file có tên chứa từ khóa tìm kiếm (không phân biệt hoa thường)
+    final filteredDocs = state.documents.where((doc) {
+      final String fileName = doc['original_name'].toString().toLowerCase();
+      return fileName.contains(_searchQuery.toLowerCase());
+    }).toList();
+
+    // 2. HIỂN THỊ: Nếu đang tìm kiếm thì hiện hết kết quả, nếu không thì chỉ hiện 5 file gần nhất
+    final List<dynamic> displayDocs = _searchQuery.isEmpty 
+        ? filteredDocs.take(5).toList() 
+        : filteredDocs;
+
+    // 3. KIỂM TRA TRỐNG:
+    if (displayDocs.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Text(
+            _searchQuery.isEmpty 
+                ? (lang.noFiles ?? "Chưa có file nào") 
+                : "Không tìm thấy file phù hợp",
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
       );
     }
-    return Center(child: CircularProgressIndicator());
+
+    // 4. RENDER DANH SÁCH:
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: displayDocs.length,
+      itemBuilder: (context, index) {
+        final doc = displayDocs[index];
+        bool isPdf = doc['type'] == 'pdf' || 
+                     doc['original_name'].toString().toLowerCase().endsWith('.pdf');
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          child: ListTile(
+            leading: Icon(
+              isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded, 
+              color: isPdf ? Colors.red : Colors.blue
+            ),
+            title: Text(
+              doc['original_name'], 
+              maxLines: 1, 
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+            subtitle: Text(doc['created_at'].toString().substring(0, 10)),
+            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+            onTap: () => Navigator.push(
+              context, 
+              MaterialPageRoute(builder: (context) => FileDetailScreen(document: doc))
+            ),
+          ),
+        );
+      },
+    );
   }
+  return const Center(child: CircularProgressIndicator());
+}
 
   Widget _buildLoadingOverlay(ThemeData theme, AppLocalizations lang) {
     return Container(

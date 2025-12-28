@@ -5,6 +5,7 @@ import 'package:image_converter_app/l10n/app_localizations.dart';
 import '../blocs/auth_bloc.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -208,11 +209,15 @@ class _LoginScreenState extends State<LoginScreen> {
                               SizedBox(height: 12),
 
                               // Quên mật khẩu
-                              Align(
+                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
                                   onPressed: () {
-                                    // TODO: Implement forgot password
+                                    // Chuyển hướng đến màn hình Quên mật khẩu
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+                                    );
                                   },
                                   child: Text(
                                     lang.forgotPassword ?? "Quên mật khẩu?",
