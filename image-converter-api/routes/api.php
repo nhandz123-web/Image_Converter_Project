@@ -4,9 +4,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\Api\SyncUserController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/sync-user', [SyncUserController::class, 'sync']);
 
 // Route test thử xem lấy thông tin user được không (yêu cầu phải có Token)
 Route::middleware('auth:api')->get('/user', function (Request $request) {

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Document;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
-use setasign\Fpdi\Fpdi; // Import thêm thư viện gộp PDF
+use setasign\Fpdi\Fpdi; 
 
 class DocumentController extends Controller
 {

@@ -12,17 +12,16 @@ return new class extends Migration
     public function up(): void
 {
     Schema::create('users', function (Blueprint $table) {
-        $table->id();
-        $table->string('name');
+        $table->id(); 
+        $table->string('name'); // Bên Web là full_name, sang đây là name
         $table->string('email')->unique();
-        $table->timestamp('email_verified_at')->nullable();
-        $table->string('password');
+        $table->string('password'); // Lưu chuỗi mã hóa y hệt Web
         
-        // --- THÊM 2 DÒNG NÀY ---
-        $table->bigInteger('storage_limit')->default(1073741824); // 1GB (tính bằng bytes)
-        $table->bigInteger('storage_used')->default(0); // Dung lượng đã dùng
-        // -----------------------
-
+        // Các trường riêng của App (cho phép null để không lỗi)
+        $table->timestamp('email_verified_at')->nullable();
+        $table->bigInteger('storage_limit')->default(104857600); // Ví dụ 100MB
+        $table->bigInteger('storage_used')->default(0);
+        
         $table->rememberToken();
         $table->timestamps();
     });

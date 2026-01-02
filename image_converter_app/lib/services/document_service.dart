@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 
 class DocumentService {
   // Thay đổi IP này giống bên AuthService (10.0.2.2 nếu máy ảo, IP LAN nếu máy thật)
-  final String baseUrl = "http://10.224.9.12:8000/api";
+  final String baseUrl = "http://192.168.1.2:8001/api";
   final _storage = const FlutterSecureStorage();
   final Dio _dio = Dio();
   DocumentService() {

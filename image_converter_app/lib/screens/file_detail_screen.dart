@@ -38,7 +38,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
   String _getFullUrl(String? path) {
     if (path == null) return "";
     if (path.startsWith('http')) return path;
-    return "http://10.224.9.12:8000/storage/$path";
+    return "http://192.168.1.2:8001/storage/$path";
   }
 
   // --- HÀM CHIA SẺ FILE MỚI ---
@@ -47,9 +47,9 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
     try {
       final tempDir = await getTemporaryDirectory();
       final tempPath = "${tempDir.path}/$fileName";
-      
+
       await Dio().download(url, tempPath);
-      
+
       if (!mounted) return;
       await Share.shareXFiles([XFile(tempPath)], text: 'Gửi bạn tài liệu PDF');
     } catch (e) {
@@ -392,7 +392,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
             ),
           ),
           SizedBox(height: 25),
-          
+
           // --- PHẦN THAY THẾ: NÚT DOWNLOAD VÀ NÚT SHARE NẰM CẠNH NHAU ---
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
@@ -419,7 +419,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
                         ),
                         padding: EdgeInsets.zero,
                       ),
-                      child: isDownloading 
+                      child: isDownloading
                         ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                         : Icon(Icons.share_rounded, size: 24),
                     ),
