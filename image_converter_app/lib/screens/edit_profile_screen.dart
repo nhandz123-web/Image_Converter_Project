@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:image_converter_app/l10n/app_localizations.dart';
 import '../services/document_service.dart';
+import '../services/auth_service.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_dimensions.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final String currentName;
@@ -14,6 +19,7 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _documentService = DocumentService();
+  final _authService = AuthService(); // Thêm để invalidate cache
 
   late TextEditingController _nameController;
   final _currentPassController = TextEditingController();
@@ -51,14 +57,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       String? currentPass = _currentPassController.text.isNotEmpty ? _currentPassController.text : null;
 
       await _documentService.updateProfile(name, currentPass, newPass);
+      
+      // ✅ Invalidate user cache sau khi update thành công
+      await _authService.invalidateUserCache();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.updateSuccess ?? "Cập nhật thành công!"),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: AppDimensions.borderRadius10),
           ),
         );
         Navigator.pop(context, true);
@@ -68,9 +77,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString().replaceAll("Exception: ", "")),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: AppDimensions.borderRadius10),
           ),
         );
       }
@@ -86,36 +95,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? theme.scaffoldBackgroundColor : Colors.grey[50],
+      backgroundColor: AppTheme.getBackgroundColor(isDark),
       // --- AppBar với Gradient ---
       appBar: AppBar(
-        elevation: 0,
+        elevation: AppDimensions.elevation0,
         centerTitle: true,
         title: Text(
           lang.editProfile ?? "Chỉnh sửa hồ sơ",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+          style: const TextStyle(
+            fontWeight: AppTextStyles.weightBold,
+            color: AppColors.white,
           ),
         ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDark
-                  ? [Color(0xFF1A237E), Color(0xFF0D47A1)]
-                  : [Color(0xFF667eea), Color(0xFF764ba2)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: AppTheme.getPrimaryGradient(isDark),
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: AppDimensions.paddingAll20,
         child: Form(
           key: _formKey,
           child: Column(
@@ -375,19 +378,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               // Button: Lưu thay đổi
               Container(
                 width: double.infinity,
-                height: 55,
+                height: AppDimensions.buttonHeightLarge,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isDark
-                        ? [Color(0xFF1A237E), Color(0xFF0D47A1)]
-                        : [Color(0xFF667eea), Color(0xFF764ba2)],
-                  ),
-                  borderRadius: BorderRadius.circular(15),
+                  gradient: AppTheme.getPrimaryGradient(isDark),
+                  borderRadius: AppDimensions.borderRadius15,
                   boxShadow: [
                     BoxShadow(
-                      color: theme.primaryColor.withOpacity(0.3),
-                      blurRadius: 15,
-                      offset: Offset(0, 5),
+                      color: theme.primaryColor.withOpacity(AppColors.opacity30),
+                      blurRadius: AppDimensions.blurRadius15,
+                      offset: const Offset(0, 5),
                     ),
                   ],
                 ),
@@ -397,7 +396,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: AppDimensions.borderRadius15,
                     ),
                   ),
                   child: _isLoading

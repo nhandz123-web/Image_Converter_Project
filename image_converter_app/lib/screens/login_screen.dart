@@ -4,7 +4,11 @@ import 'package:image_converter_app/l10n/app_localizations.dart';
 
 import '../blocs/auth_bloc.dart';
 import 'register_screen.dart';
-import 'home_screen.dart';
+import 'main_screen.dart'; // ✅ Import MainScreen với Bottom Navigation
+import '../theme/app_colors.dart';
+import '../theme/app_dimensions.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -36,26 +40,26 @@ class _LoginScreenState extends State<LoginScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(lang.loginSuccess ?? "Đăng nhập thành công!"),
-                backgroundColor: Colors.green,
+                backgroundColor: AppColors.success,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppDimensions.borderRadius10,
                 ),
               ),
             );
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
+              MaterialPageRoute(builder: (context) => const MainScreen()),
             );
           }
           if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.error),
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.error,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppDimensions.borderRadius10,
                 ),
               ),
             );
@@ -64,66 +68,55 @@ class _LoginScreenState extends State<LoginScreen> {
         builder: (context, state) {
           return Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? [Color(0xFF1A237E), Color(0xFF0D47A1)]
-                    : [Color(0xFF667eea), Color(0xFF764ba2)],
-              ),
+              gradient: AppTheme.getPrimaryGradient(isDark),
             ),
             child: SafeArea(
               child: Center(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
+                    padding: AppDimensions.paddingH24,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // Logo và tiêu đề
                         Container(
-                          padding: EdgeInsets.all(20),
+                          padding: AppDimensions.paddingAll20,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: AppColors.white.withOpacity(AppColors.opacity15),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.lock_open_rounded,
-                            size: 80,
-                            color: Colors.white,
+                            size: AppDimensions.iconSizeGiant,
+                            color: AppColors.white,
                           ),
                         ),
-                        SizedBox(height: 30),
+                        const SizedBox(height: AppDimensions.spacing30),
                         Text(
                           lang.login ?? "Đăng nhập",
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 1,
-                          ),
+                          style: AppTextStyles.h1.copyWith(color: AppColors.white),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: AppDimensions.spacing8),
                         Text(
                           lang.welcomeBack ?? "Chào mừng bạn quay trở lại",
                           style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white.withOpacity(0.8),
+                            fontSize: AppTextStyles.fontSize16,
+                            color: AppColors.white.withOpacity(AppColors.opacity80),
                           ),
                         ),
-                        SizedBox(height: 40),
+                        const SizedBox(height: AppDimensions.spacing40),
 
                         // Card chứa form
                         Container(
-                          padding: EdgeInsets.all(24),
+                          padding: AppDimensions.paddingAll24,
                           decoration: BoxDecoration(
                             color: theme.cardColor,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: AppDimensions.borderRadius20,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 20,
-                                offset: Offset(0, 10),
+                                color: AppColors.black.withOpacity(AppColors.opacity10),
+                                blurRadius: AppDimensions.blurRadius20,
+                                offset: const Offset(0, 10),
                               ),
                             ],
                           ),
@@ -133,44 +126,24 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextField(
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
-                                style: TextStyle(fontSize: 16),
+                                style: const TextStyle(fontSize: AppTextStyles.fontSize16),
                                 decoration: InputDecoration(
                                   labelText: lang.email ?? "Email",
                                   hintText: lang.enterEmail ?? "Nhập email của bạn",
-                                  prefixIcon: Icon(Icons.email_outlined),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey.withOpacity(0.3),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: theme.primaryColor,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: isDark
-                                      ? Colors.grey[850]
-                                      : Colors.grey[50],
+                                  prefixIcon: const Icon(Icons.email_outlined),
                                 ),
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: AppDimensions.spacing16),
 
                               // Password field
                               TextField(
                                 controller: _passController,
                                 obscureText: !_isPasswordVisible,
-                                style: TextStyle(fontSize: 16),
+                                style: const TextStyle(fontSize: AppTextStyles.fontSize16),
                                 decoration: InputDecoration(
                                   labelText: lang.password ?? "Mật khẩu",
                                   hintText: lang.enterPassword ?? "Nhập mật khẩu",
-                                  prefixIcon: Icon(Icons.lock_outline),
+                                  prefixIcon: const Icon(Icons.lock_outline),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _isPasswordVisible
@@ -183,29 +156,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                       });
                                     },
                                   ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey.withOpacity(0.3),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: theme.primaryColor,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: isDark
-                                      ? Colors.grey[850]
-                                      : Colors.grey[50],
                                 ),
                               ),
-                              SizedBox(height: 12),
+                              const SizedBox(height: AppDimensions.spacing12),
 
                               // Quên mật khẩu
                               Align(
@@ -218,17 +171,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                     lang.forgotPassword ?? "Quên mật khẩu?",
                                     style: TextStyle(
                                       color: theme.primaryColor,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: AppTextStyles.weightSemiBold,
                                     ),
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 8),
+                              const SizedBox(height: AppDimensions.spacing8),
 
                               // Nút đăng nhập
                               SizedBox(
                                 width: double.infinity,
-                                height: 56,
+                                height: AppDimensions.buttonHeightLarge,
                                 child: ElevatedButton(
                                   onPressed: state is AuthLoading
                                       ? null
@@ -241,10 +194,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: Text(lang.fillAllFields ?? "Vui lòng nhập đủ thông tin"),
-                                          backgroundColor: Colors.orange,
+                                          backgroundColor: AppColors.warning,
                                           behavior: SnackBarBehavior.floating,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius: AppDimensions.borderRadius10,
                                           ),
                                         ),
                                       );
@@ -255,30 +208,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                       LoginRequested(email, password),
                                     );
                                   },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: theme.primaryColor,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    elevation: 2,
-                                  ),
                                   child: state is AuthLoading
-                                      ? SizedBox(
-                                    height: 24,
-                                    width: 24,
+                                      ? const SizedBox(
+                                    height: AppDimensions.iconSizeRegular,
+                                    width: AppDimensions.iconSizeRegular,
                                     child: CircularProgressIndicator(
-                                      color: Colors.white,
+                                      color: AppColors.white,
                                       strokeWidth: 2.5,
                                     ),
                                   )
                                       : Text(
                                     lang.login ?? "Đăng nhập",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
+                                    style: AppTextStyles.buttonLarge,
                                   ),
                                 ),
                               ),
@@ -286,7 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                        SizedBox(height: 24),
+                        const SizedBox(height: AppDimensions.spacing24),
 
                         // Đăng ký
                         Row(
@@ -295,8 +236,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             Text(
                               lang.noAccount ?? "Chưa có tài khoản?",
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
-                                fontSize: 15,
+                                color: AppColors.white.withOpacity(AppColors.opacity90),
+                                fontSize: AppTextStyles.fontSize15,
                               ),
                             ),
                             TextButton(
@@ -310,17 +251,17 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                               child: Text(
                                 lang.registerNow ?? "Đăng ký ngay",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
+                                style: const TextStyle(
+                                  color: AppColors.white,
+                                  fontSize: AppTextStyles.fontSize15,
+                                  fontWeight: AppTextStyles.weightBold,
                                 ),
                               ),
                             ),
                           ],
                         ),
 
-                        SizedBox(height: 20),
+                        const SizedBox(height: AppDimensions.spacing20),
                       ],
                     ),
                   ),

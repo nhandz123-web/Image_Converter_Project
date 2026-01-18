@@ -1,4 +1,5 @@
 {
+  "appName": "SnapPDF",
   "settings": "Settings",
   "logout": "Logout",
   "language": "Language",
@@ -128,6 +129,36 @@
   "max": "Max",
   "about": "About",
   "version": "Version",
-  "developer": "Developer"
+  "developer": "Developer",
+    "cannotOpenFile" : "Can not open file",
+    "enterFileName" :" Enter your file name",
+    "fileNameHint" : "New_file",
+    "useDefault": "Use default",
+    "confirm": "Confirm",
+    "pressBackAgainToExit": "Press back again to exit",
+    "navHome": "Home",
+    "navFiles": "Files",
+    
+    "downloadedFiles": "Downloaded Files",
+    "selectedFiles": "Selected {count} files",
+    "totalSize": "Total: {size}",
+    "selectAll": "Select all",
+    "selectMultiple": "Select multiple",
+    "noFilesYet": "No files yet",
+    "downloadedFilesHint": "Files you download from Recent Files will appear here",
+    "worksOffline": "Works offline",
+    "openFile": "Open file",
+    "shareFile": "Share",
+    "justNow": "Just now",
+    "minutesAgo": "{count} minutes ago",
+    "hoursAgo": "{count} hours ago",
+    "daysAgo": "{count} days ago",
+    "confirmDeleteTitle": "Confirm Delete",
+    "confirmDeleteSingle": "Are you sure you want to delete \"{name}\" from device?",
+    "confirmDeleteMultiple": "Are you sure you want to delete {count} selected files?",
+    "cannotOpenFileError": "Cannot open file: {message}",
+    "openFileError": "Error opening file: {error}",
+    "shareError": "Share error: {error}",
+    "sharedFrom": "Shared from SnapPDF"
 
 }

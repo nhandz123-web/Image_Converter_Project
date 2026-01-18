@@ -9,6 +9,9 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
+  String get appName => 'ẢnhPDF+';
+
+  @override
   String get settings => 'Cài đặt';
 
   @override
@@ -371,4 +374,112 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get developer => 'Nhà phát triển';
+
+  @override
+  String get cannotOpenFile => 'Không thể mở file';
+
+  @override
+  String get enterFileName => 'Nhập tên file của bạn';
+
+  @override
+  String get fileNameHint => 'Tai_lieu_moi';
+
+  @override
+  String get useDefault => 'Mặc định';
+
+  @override
+  String get confirm => 'Xác Nhận';
+
+  @override
+  String get pressBackAgainToExit => 'Nhấn lại lần nữa để thoát';
+
+  @override
+  String get navHome => 'Trang chủ';
+
+  @override
+  String get navFiles => 'Tệp tin';
+
+  @override
+  String get downloadedFiles => 'File đã tải';
+
+  @override
+  String selectedFiles(Object count) {
+    return 'Đã chọn $count file';
+  }
+
+  @override
+  String totalSize(Object size) {
+    return 'Tổng: $size';
+  }
+
+  @override
+  String get selectAll => 'Chọn tất cả';
+
+  @override
+  String get selectMultiple => 'Chọn nhiều';
+
+  @override
+  String get noFilesYet => 'Chưa có file nào';
+
+  @override
+  String get downloadedFilesHint =>
+      'Các file bạn tải xuống từ Recent Files sẽ hiển thị ở đây';
+
+  @override
+  String get worksOffline => 'Hoạt động offline';
+
+  @override
+  String get openFile => 'Mở file';
+
+  @override
+  String get shareFile => 'Chia sẻ';
+
+  @override
+  String get justNow => 'Vừa xong';
+
+  @override
+  String minutesAgo(Object count) {
+    return '$count phút trước';
+  }
+
+  @override
+  String hoursAgo(Object count) {
+    return '$count giờ trước';
+  }
+
+  @override
+  String daysAgo(Object count) {
+    return '$count ngày trước';
+  }
+
+  @override
+  String get confirmDeleteTitle => 'Xác nhận xóa';
+
+  @override
+  String confirmDeleteSingle(Object name) {
+    return 'Bạn có chắc muốn xóa \"$name\" khỏi thiết bị?';
+  }
+
+  @override
+  String confirmDeleteMultiple(Object count) {
+    return 'Bạn có chắc muốn xóa $count file đã chọn?';
+  }
+
+  @override
+  String cannotOpenFileError(Object message) {
+    return 'Không thể mở file: $message';
+  }
+
+  @override
+  String openFileError(Object error) {
+    return 'Lỗi mở file: $error';
+  }
+
+  @override
+  String shareError(Object error) {
+    return 'Lỗi chia sẻ: $error';
+  }
+
+  @override
+  String get sharedFrom => 'Chia sẻ từ ẢnhPDF+';
 }

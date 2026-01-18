@@ -3,30 +3,74 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import thư viện lưu trữ
 import 'package:image_converter_app/l10n/app_localizations.dart';
+import 'dart:async';
 import 'services/auth_service.dart';
 import 'blocs/auth_bloc.dart';
 import 'blocs/language_cubit.dart';
 import 'blocs/font_size_cubit.dart';
 import 'blocs/theme_cubit.dart';
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart'; // Import HomeScreen
+import 'screens/main_screen.dart'; // ✅ Màn hình chính với Bottom Navigation
 import 'blocs/home_bloc.dart';
+import 'theme/app_theme.dart'; // Import theme mới
+
+/// Global BlocObserver để log và handle errors từ tất cả Blocs
+class AppBlocObserver extends BlocObserver {
+  @override
+  void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
+    print('❌ [${bloc.runtimeType}] Error: $error');
+    print('📍 StackTrace: $stackTrace');
+    super.onError(bloc, error, stackTrace);
+  }
+
+  @override
+  void onTransition(Bloc bloc, Transition transition) {
+    print('🔄 [${bloc.runtimeType}] ${transition.currentState.runtimeType} → ${transition.nextState.runtimeType}');
+    super.onTransition(bloc, transition);
+  }
+
+  @override
+  void onEvent(Bloc bloc, Object? event) {
+    print('📣 [${bloc.runtimeType}] Event: ${event.runtimeType}');
+    super.onEvent(bloc, event);
+  }
+}
 
 void main() async {
   // 1. Đảm bảo Flutter binding đã sẵn sàng để gọi code bất đồng bộ
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // 2. Setup Global Error Handler
+  FlutterError.onError = (FlutterErrorDetails details) {
+    print('❌ [FlutterError] ${details.exceptionAsString()}');
+    print('📍 ${details.stack}');
+    // Không crash app, chỉ log lỗi
+  };
+  
+  // 3. Setup BlocObserver để monitor tất cả Blocs
+  Bloc.observer = AppBlocObserver();
 
-  // 2. Load các cài đặt đã lưu từ SharedPreferences
+  // 4. Load các cài đặt đã lưu từ SharedPreferences
   final prefs = await SharedPreferences.getInstance();
   final isDark = prefs.getBool('is_dark') ?? false; // Mặc định là Sáng (false)
   final languageCode = prefs.getString('language_code') ?? 'vi'; // Mặc định Tiếng Việt
   final fontSize = prefs.getDouble('font_size') ?? 1.0; // Mặc định 1.0
 
-  runApp(MyApp(
-    isDark: isDark,
-    languageCode: languageCode,
-    fontSize: fontSize,
-  ));
+  // 5. Wrap runApp với error zone để catch async errors
+  runZonedGuarded(
+    () {
+      runApp(MyApp(
+        isDark: isDark,
+        languageCode: languageCode,
+        fontSize: fontSize,
+      ));
+    },
+    (error, stackTrace) {
+      print('❌ [ZoneError] Uncaught error: $error');
+      print('📍 StackTrace: $stackTrace');
+      // Có thể gửi lỗi lên server analytics ở đây (Firebase Crashlytics, Sentry, v.v.)
+    },
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -60,58 +104,62 @@ class MyApp extends StatelessWidget {
           BlocProvider(create: (context) => ThemeCubit(isDark: isDark)),
           BlocProvider(create: (context) => HomeBloc()..add(LoadHistoryRequested())),
         ],
-        child: BlocBuilder<ThemeCubit, ThemeMode>(
-          builder: (context, themeMode) {
-            return BlocBuilder<LanguageCubit, Locale>(
-              builder: (context, locale) {
-                return BlocBuilder<FontSizeCubit, double>(
-                  builder: (context, fontScale) {
-                    return MaterialApp(
-                      title: 'ShiftSpeed',
-                      debugShowCheckedModeBanner: false,
+        // ✅ WARNING FIX: Tách thành widget riêng để tối ưu rebuild
+        child: const AppWrapper(),
+      ),
+    );
+  }
+}
 
-                      // Theme & Locale & Font
-                      themeMode: themeMode,
-                      theme: ThemeData.light(useMaterial3: true),
-                      darkTheme: ThemeData.dark(useMaterial3: true),
-                      locale: locale,
-                      localizationsDelegates: const [
-                        AppLocalizations.delegate,
-                        GlobalMaterialLocalizations.delegate,
-                        GlobalWidgetsLocalizations.delegate,
-                        GlobalCupertinoLocalizations.delegate,
-                      ],
-                      supportedLocales: const [
-                        Locale('vi'),
-                        Locale('en'),
-                      ],
-                      builder: (context, child) {
-                        return MediaQuery(
-                          data: MediaQuery.of(context).copyWith(
-                            textScaler: TextScaler.linear(fontScale),
-                          ),
-                          child: child!,
-                        );
-                      },
+/// Widget wrapper để lắng nghe các Cubit settings
+/// Tách riêng để code gọn hơn và dễ maintain
+class AppWrapper extends StatelessWidget {
+  const AppWrapper({super.key});
 
-                      // --- LOGIC CHỌN MÀN HÌNH KHỞI ĐỘNG ---
-                      // Dùng BlocBuilder của AuthBloc để quyết định màn hình nào hiện ra đầu tiên
-                      home: BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          if (state is AuthSuccess) {
-                            return HomeScreen(); // Đã đăng nhập -> Vào Home
-                          }
-                          // Nếu đang check hoặc chưa đăng nhập -> Vào Login
-                          return LoginScreen();
-                        },
-                      ),
-                    );
-                  },
-                );
-              },
-            );
-          },
-        ),
+  @override
+  Widget build(BuildContext context) {
+    // ✅ Sử dụng context.watch thay vì nested BlocBuilder
+    final themeMode = context.watch<ThemeCubit>().state;
+    final locale = context.watch<LanguageCubit>().state;
+    final fontScale = context.watch<FontSizeCubit>().state;
+
+    return MaterialApp(
+      title: 'ẢnhPDF+',
+      debugShowCheckedModeBanner: false,
+
+      // Theme & Locale & Font
+      themeMode: themeMode,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      locale: locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('vi'),
+        Locale('en'),
+      ],
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(fontScale),
+          ),
+          child: child!,
+        );
+      },
+
+      // --- LOGIC CHỌN MÀN HÌNH KHỞI ĐỘNG ---
+      home: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state is AuthSuccess) {
+            return const MainScreen(); // ✅ Đã đăng nhập -> Vào MainScreen với Bottom Nav
+          }
+          // Nếu đang check hoặc chưa đăng nhập -> Vào Login
+          return LoginScreen();
+        },
       ),
     );
   }

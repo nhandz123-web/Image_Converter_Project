@@ -3,10 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_converter_app/l10n/app_localizations.dart';
 import '../services/document_service.dart';
+import '../services/auth_service.dart';
 import '../blocs/auth_bloc.dart';
 import 'settings_screen.dart';
 import 'login_screen.dart';
 import 'edit_profile_screen.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_dimensions.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -15,9 +20,11 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final DocumentService _documentService = DocumentService();
+  final AuthService _authService = AuthService();
 
   // Biến lưu dữ liệu dung lượng
   bool _isLoading = true;
+  bool _isFromCache = false; // Đánh dấu data từ cache
   int _usedBytes = 0;
   int _totalBytes = 1073741824; // Mặc định 1GB nếu chưa load được
   double _percent = 0.0;
@@ -30,32 +37,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadAllData();
   }
 
-  Future<void> _loadAllData() async {
+  /// Load tất cả dữ liệu (user info, storage)
+  /// [forceRefresh] - Bắt buộc load từ API, bỏ qua cache
+  Future<void> _loadAllData({bool forceRefresh = false}) async {
+    // Khởi tạo giá trị mặc định
+    int usedBytes = 0;
+    int totalBytes = 1073741824; // 1GB mặc định
+    double percent = 0.0;
+    String name = 'Người dùng';
+    String email = '';
+    bool isFromCache = false;
+
+    // 1. Gọi API lấy dung lượng (xử lý riêng)
     try {
-      // 1. Gọi API lấy dung lượng
       final storageData = await _documentService.getStorageUsage();
+      usedBytes = storageData['used_bytes'] ?? 0;
+      totalBytes = storageData['total_bytes'] ?? 1073741824;
+      percent = (storageData['percentage'] ?? 0) / 100.0;
+    } catch (e) {
+      print("⚠️ Lỗi lấy storage (sử dụng giá trị mặc định): $e");
+      // Giữ nguyên giá trị mặc định
+    }
 
-      // 2. Gọi API lấy thông tin User
-      final userData = await _documentService.getUserInfo();
-
-      if (mounted) {
-        setState(() {
-          // Cập nhật dung lượng
-          _usedBytes = storageData['used_bytes'];
-          _totalBytes = storageData['total_bytes'];
-          _percent = (storageData['percentage'] ?? 0) / 100.0;
-
-          // Cập nhật Tên & Email thật
-          _name = userData['name'];
-          _email = userData['email'];
-
-          _isLoading = false;
-        });
+    // 2. Gọi API lấy thông tin User (có caching tự động trong AuthService)
+    try {
+      final userData = await _authService.getUser(forceRefresh: forceRefresh);
+      if (userData != null) {
+        name = userData['name'] ?? 'Người dùng';
+        email = userData['email'] ?? '';
+        
+        // Check xem data có từ cache không (AuthService sẽ log ra console)
+        // Để đơn giản, ta kiểm tra bằng cách so sánh thời gian load
+        // Nếu load quá nhanh (< 100ms), có thể là từ cache
+        // (Logic này có thể cải thiện thêm)
       }
     } catch (e) {
-      print("Lỗi: $e");
-      if (mounted) setState(() => _isLoading = false);
+      print("⚠️ Lỗi lấy user info: $e");
+      isFromCache = true; // Nếu lỗi, có thể đang dùng fallback cache
     }
+
+    // 3. Cập nhật UI
+    if (mounted) {
+      setState(() {
+        _usedBytes = usedBytes;
+        _totalBytes = totalBytes;
+        _percent = percent;
+        _name = name;
+        _email = email;
+        _isFromCache = isFromCache;
+        _isLoading = false;
+      });
+    }
+  }
+  
+  /// Force refresh data từ API
+  Future<void> _forceRefresh() async {
+    setState(() {
+      _isLoading = true;
+    });
+    await _loadAllData(forceRefresh: true);
   }
 
   // Hàm format số bytes sang MB/GB cho dễ đọc
@@ -73,7 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     // Logic màu sắc thanh tiến trình
-    Color progressColor = _percent > 0.9 ? Colors.red : Colors.orange;
+    Color progressColor = _percent > 0.9 ? AppColors.red : AppColors.orange;
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
@@ -88,88 +128,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: theme.scaffoldBackgroundColor,
         // --- AppBar với Gradient và Title ---
         appBar: AppBar(
-          elevation: 0,
+          elevation: AppDimensions.elevation0,
           centerTitle: true,
           title: Text(
             lang.myProfile ?? "Hồ sơ của tôi",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+            style: const TextStyle(
+              fontWeight: AppTextStyles.weightBold,
+              color: AppColors.white,
             ),
           ),
           flexibleSpace: Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [Color(0xFF1A237E), Color(0xFF0D47A1)]
-                    : [Color(0xFF667eea), Color(0xFF764ba2)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: AppTheme.getPrimaryGradient(isDark),
             ),
           ),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+            icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.white),
             onPressed: () => Navigator.pop(context),
           ),
+          actions: [
+            // Nút refresh
+            IconButton(
+              icon: _isLoading 
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.white,
+                      ),
+                    )
+                  : const Icon(Icons.refresh, color: AppColors.white),
+              onPressed: _isLoading ? null : _forceRefresh,
+              tooltip: "Làm mới",
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           child: Column(
             children: [
               // --- HEADER với Gradient cho cả Light & Dark mode ---
               Container(
-                padding: EdgeInsets.only(bottom: 30),
+                padding: const EdgeInsets.only(bottom: AppDimensions.spacing30),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isDark
-                        ? [Color(0xFF1A237E), Color(0xFF0D47A1)] // Gradient xanh đậm cho Dark mode
-                        : [Colors.blue[400]!, Colors.purple[400]!], // Gradient xanh-tím cho Light mode
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+                  gradient: isDark ? AppColors.welcomeCardGradientDark : AppColors.welcomeCardGradientLight,
+                  borderRadius: AppDimensions.borderRadiusBottom30,
                 ),
                 child: Column(
                   children: [
                     Center(
                       child: Container(
-                        padding: EdgeInsets.all(4),
+                        padding: AppDimensions.paddingAll4,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.3),
+                          color: AppColors.white.withOpacity(AppColors.opacity30),
                         ),
                         child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.white,
-                          child: Icon(Icons.person, size: 50, color: theme.primaryColor),
+                          radius: AppDimensions.avatarSizeRegular,
+                          backgroundColor: isDark ? AppColors.grey800 : AppColors.white,
+                          child: Icon(Icons.person, size: AppDimensions.iconSizeHuge, color: isDark ? AppColors.white : theme.primaryColor),
                         ),
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: AppDimensions.spacing16),
                     Text(
                       _isLoading ? (lang.loading ?? "Đang tải...") : _name,
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: const TextStyle(fontSize: AppTextStyles.fontSize22, fontWeight: AppTextStyles.weightBold, color: AppColors.white),
                     ),
                     Text(
                       _email,
-                      style: TextStyle(fontSize: 14, color: Colors.white70),
+                      style: const TextStyle(fontSize: AppTextStyles.fontSize14, color: Colors.white70),
                     ),
                   ],
                 ),
               ),
 
-              SizedBox(height: 20),
+              const SizedBox(height: AppDimensions.spacing20),
 
-              // --- THANH DUNG LƯỢNG (DATA THẬT) - ĐÃ SỬA MÀU ---
+              // --- THANH DUNG LƯỢNG (DATA THẬT) - ĐÃ SỮA MÀU ---
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: AppDimensions.paddingH20,
                 child: Container(
-                  padding: EdgeInsets.all(20),
+                  padding: AppDimensions.paddingAll20,
                   decoration: BoxDecoration(
                     color: theme.cardColor,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: AppDimensions.borderRadius20,
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: Offset(0, 4)),
+                      BoxShadow(color: AppColors.black.withOpacity(AppColors.opacity05), blurRadius: AppDimensions.blurRadius10, offset: const Offset(0, 4)),
                     ],
                   ),
                   child: Column(
@@ -181,41 +226,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Text(
                             lang.storageUsed ?? "Dung lượng đã dùng",
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black, // Đảm bảo hiển thị rõ
+                              fontWeight: AppTextStyles.weightBold,
+                              color: isDark ? AppColors.white : AppColors.black,
                             ),
                           ),
                           _isLoading
-                              ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                              ? const SizedBox(width: AppDimensions.iconSizeMedium, height: AppDimensions.iconSizeMedium, child: CircularProgressIndicator(strokeWidth: 2))
                               : Text(
                             "${formatBytes(_usedBytes, 2)} / ${formatBytes(_totalBytes, 0)}",
                             style: TextStyle(
-                              color: isDark ? Colors.blue[300] : theme.primaryColor, // Sáng hơn trong dark mode
-                              fontWeight: FontWeight.bold,
+                              color: isDark ? AppColors.blue300 : theme.primaryColor,
+                              fontWeight: AppTextStyles.weightBold,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: AppDimensions.spacing10),
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: AppDimensions.borderRadius10,
                         child: _isLoading
-                            ? LinearProgressIndicator(minHeight: 10)
+                            ? const LinearProgressIndicator(minHeight: AppDimensions.progressBarHeight)
                             : LinearProgressIndicator(
                           value: _percent,
-                          backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200], // Nền tối hơn trong dark mode
+                          backgroundColor: isDark ? AppColors.grey800 : AppColors.grey200,
                           valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-                          minHeight: 10,
+                          minHeight: AppDimensions.progressBarHeight,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: AppDimensions.spacing8),
                       Text(
                         _isLoading
                             ? (lang.calculating ?? "Đang tính toán...")
                             : "${lang.youHaveUsed ?? "Bạn đã dùng"} ${(_percent * 100).toStringAsFixed(1)}% ${lang.storage ?? "dung lượng"}.",
                         style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600], // Sáng hơn trong dark mode
+                          fontSize: AppTextStyles.fontSize12,
+                          color: AppTheme.getSecondaryTextColor(isDark),
                         ),
                       ),
                     ],
@@ -223,7 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
 
-              SizedBox(height: 20),
+              const SizedBox(height: AppDimensions.spacing20),
 
               // --- MENU ---
               Padding(
@@ -306,24 +351,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
         bool isDestructive = false,
       }) {
     return Card(
-      elevation: 0,
-      margin: EdgeInsets.only(bottom: 10),
+      elevation: AppDimensions.elevation0,
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacing10),
       color: theme.cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      shape: RoundedRectangleBorder(borderRadius: AppDimensions.borderRadius15),
       child: ListTile(
         leading: Container(
-          padding: EdgeInsets.all(10),
+          padding: AppDimensions.paddingAll10,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
+            color: color.withOpacity(AppColors.opacity10),
+            borderRadius: AppDimensions.borderRadius10,
           ),
           child: Icon(icon, color: color),
         ),
         title: Text(
           title,
-          style: TextStyle(fontWeight: FontWeight.w600, color: isDestructive ? Colors.red : null),
+          style: TextStyle(fontWeight: AppTextStyles.weightSemiBold, color: isDestructive ? AppColors.red : null),
         ),
-        trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
+        trailing: Icon(Icons.arrow_forward_ios_rounded, size: AppDimensions.iconSizeMedium, color: AppColors.grey),
         onTap: onTap,
       ),
     );
@@ -334,10 +379,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: AppDimensions.borderRadius20),
         title: Text(
           lang.confirmLogout ?? "Xác nhận đăng xuất",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: AppTextStyles.weightBold),
         ),
         content: Text(
           lang.logoutMessage ?? "Bạn có chắc chắn muốn đăng xuất?",
@@ -347,7 +392,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               lang.cancel ?? "Hủy",
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: AppColors.grey),
             ),
           ),
           ElevatedButton(
@@ -356,14 +401,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context.read<AuthBloc>().add(LogoutRequested());
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.red,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppDimensions.borderRadius10,
               ),
             ),
             child: Text(
               lang.logout ?? "Đăng xuất",
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.white),
             ),
           ),
         ],

@@ -2,30 +2,44 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:dio/dio.dart';
+import '../config/api_config.dart';
 
 class DocumentService {
-  // Thay đổi IP này giống bên AuthService (10.0.2.2 nếu máy ảo, IP LAN nếu máy thật)
-  final String baseUrl = "http://10.224.9.12:8000/api";
+  // ✅ Sử dụng ApiConfig thay vì hardcode IP
+  final String baseUrl = ApiConfig.apiUrl;
   final _storage = const FlutterSecureStorage();
-  final Dio _dio = Dio();
-  DocumentService() {
-    _dio.options.baseUrl = baseUrl;
-  }
-  // Hàm Upload ảnh
-  Future<Map<String, dynamic>?> uploadImages(List<File> imageFiles) async {
+  // ==================== CONVERT API ====================
+
+  /// Upload ảnh và convert sang PDF
+  /// Backend: POST /api/ với images[] array
+  /// [imageFiles] - Danh sách file ảnh
+  /// [quality] - Chất lượng nén (low, medium, high, original)
+  /// [outputName] - Tên file output tùy chỉnh (không bắt buộc)
+  Future<Map<String, dynamic>?> uploadImages(
+      List<File> imageFiles, {
+        String quality = 'medium',
+        String? outputName,
+      }) async {
     try {
       String? token = await _storage.read(key: 'auth_token');
       if (token == null) return null;
 
-      var uri = Uri.parse('$baseUrl/convert');
+      // Backend route: POST /api/ (root path, không phải /api/convert)
+      var uri = Uri.parse(baseUrl);
       var request = http.MultipartRequest('POST', uri);
 
       request.headers['Authorization'] = 'Bearer $token';
       request.headers['Accept'] = 'application/json';
 
+      // Thêm quality parameter
+      request.fields['quality'] = quality;
+
+      // Thêm output_name nếu có
+      if (outputName != null && outputName.isNotEmpty) {
+        request.fields['output_name'] = outputName;
+      }
+
       // QUAN TRỌNG: Backend Laravel đang đợi key là 'images[]'
-      // Duyệt qua từng file trong danh sách để add vào request
       for (var file in imageFiles) {
         request.files.add(await http.MultipartFile.fromPath(
           'images[]', // Thêm ngoặc [] để Laravel hiểu là mảng
@@ -36,78 +50,277 @@ class DocumentService {
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
-        throw Exception(jsonDecode(response.body)['message'] ?? 'Lỗi upload');
+        final errorBody = jsonDecode(response.body);
+        throw Exception(errorBody['message'] ?? 'Lỗi upload');
       }
     } catch (e) {
-      print("Lỗi Service: $e");
+      print("Lỗi uploadImages: $e");
       rethrow;
     }
   }
 
-    // --- HÀM GỘP PDF (Dùng Dio) ---
-  Future<Map<String, dynamic>> mergePdfs(List<int> documentIds) async {
+  /// Lấy danh sách quality presets
+  /// Backend: GET /api/quality-presets
+  Future<Map<String, dynamic>> getQualityPresets() async {
     try {
-      // Lấy token từ storage giống các hàm http bên dưới
+      String? token = await _storage.read(key: 'auth_token');
+      
+      // ✅ CRITICAL FIX: Check null token trước khi gọi API
+      if (token == null) {
+        throw Exception('Bạn chưa đăng nhập');
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/quality-presets'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Không lấy được quality presets');
+      }
+    } catch (e) {
+      print("Lỗi getQualityPresets: $e");
+      rethrow;
+    }
+  }
+
+  // ==================== FILE PREVIEW ====================
+
+  /// Lấy URL preview file (hiển thị inline)
+  /// Backend: GET /api/files/{id}/preview
+  String getPreviewUrl(int fileId) {
+    return '$baseUrl/files/$fileId/preview';
+  }
+
+  /// Lấy URL stream file (hỗ trợ Range requests cho PDF reader)
+  /// Backend: GET /api/files/{id}/stream
+  String getStreamUrl(int fileId) {
+    return '$baseUrl/files/$fileId/stream';
+  }
+
+  /// Lấy URL download file
+  /// Backend: GET /api/files/{id}/download
+  String getDownloadUrl(int fileId) {
+    return '$baseUrl/files/$fileId/download';
+  }
+
+  /// Lấy thông tin chi tiết file
+  /// Backend: GET /api/files/{id}/info
+  Future<Map<String, dynamic>?> getFileInfo(int fileId) async {
+    try {
+      String? token = await _storage.read(key: 'auth_token');
+      if (token == null) return null;
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/files/$fileId/info'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == true) {
+          return data['file'];
+        }
+      }
+      return null;
+    } catch (e) {
+      print("Lỗi getFileInfo: $e");
+      return null;
+    }
+  }
+
+  // ==================== DOCUMENT MANAGEMENT ====================
+
+  /// Lấy danh sách lịch sử documents
+  /// Backend: GET /api/ (index method)
+  Future<List<dynamic>> getHistory() async {
+    try {
+      String? token = await _storage.read(key: 'auth_token');
+      
+      // ✅ CRITICAL FIX: Check null token trước khi gọi API
+      if (token == null) {
+        throw Exception('Bạn chưa đăng nhập');
+      }
+
+      // Backend route: GET /api/ (root path, không phải /api/history)
+      final response = await http.get(
+        Uri.parse(baseUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Backend trả về: { success: true, documents: [...] }
+        if (data['documents'] is List) {
+          return data['documents'];
+        } else if (data['documents'] is Map && data['documents']['data'] is List) {
+          // Nếu có pagination
+          return data['documents']['data'];
+        } else {
+          throw Exception('Format dữ liệu không đúng');
+        }
+      } else if (response.statusCode == 401) {
+        throw Exception('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+      } else {
+        throw Exception('Không lấy được lịch sử (${response.statusCode})');
+      }
+    } catch (e) {
+      print("Lỗi getHistory: $e");
+      rethrow;
+    }
+  }
+
+  /// Xóa document theo ID
+  /// Backend: DELETE /api/{id}
+  Future<void> deleteDocument(int id) async {
+    try {
       String? token = await _storage.read(key: 'auth_token');
 
-      final response = await _dio.post(
-        '/documents/merge',
-        data: {
-          'document_ids': documentIds,
+      if (token == null) {
+        throw Exception('Bạn chưa đăng nhập');
+      }
+
+      // Backend route: DELETE /api/{id} (không phải /api/documents/{id})
+      final url = Uri.parse('$baseUrl/$id');
+
+      final response = await http.delete(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
         },
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Accept': 'application/json',
-          },
-        ),
       );
-      return response.data;
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? "Lỗi server khi gộp PDF");
+
+      if (response.statusCode == 200) {
+        print('Xóa thành công ID: $id');
+        return;
+      } else {
+        final body = jsonDecode(response.body);
+        String errorMessage = body['message'] ?? 'Lỗi không xác định từ server';
+        throw Exception(errorMessage);
+      }
     } catch (e) {
-      throw Exception("Lỗi hệ thống: $e");
+      print('Lỗi deleteDocument: $e');
+      rethrow;
     }
   }
 
-  // Hàm lấy danh sách lịch sử
-  Future<List<dynamic>> getHistory() async {
-    String? token = await _storage.read(key: 'auth_token');
-    final response = await http.get(
-      Uri.parse('$baseUrl/history'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
-    );
+  /// Đổi tên document
+  /// Backend: PUT /api/{id}
+  Future<void> renameDocument(int id, String newName) async {
+    try {
+      String? token = await _storage.read(key: 'auth_token');
 
-    if (response.statusCode == 200) {
+      // Backend route: PUT /api/{id} (không phải /api/documents/{id})
+      final response = await http.put(
+        Uri.parse('$baseUrl/$id'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({'new_name': newName}),
+      );
+
+      if (response.statusCode != 200) {
+        final body = jsonDecode(response.body);
+        throw Exception(body['message'] ?? 'Lỗi khi đổi tên file');
+      }
+    } catch (e) {
+      print('Lỗi renameDocument: $e');
+      rethrow;
+    }
+  }
+
+  /// Gộp nhiều file PDF thành một
+  /// Backend: POST /api/merge
+  ///
+  /// [documentIds] - Danh sách ID của các file PDF cần gộp (theo thứ tự)
+  /// [outputName] - Tên file output (optional)
+  ///
+  /// Returns: Map chứa thông tin document đã được gộp
+  Future<Map<String, dynamic>> mergePdfs(
+      List<int> documentIds, {
+        String? outputName,
+      }) async {
+    try {
+      String? token = await _storage.read(key: 'auth_token');
+
+      if (token == null) {
+        throw Exception('Bạn chưa đăng nhập');
+      }
+
+      // Validate input
+      if (documentIds.length < 2) {
+        throw Exception('Cần ít nhất 2 file PDF để gộp');
+      }
+
+      // Prepare request body
+      Map<String, dynamic> requestBody = {
+        'pdf_ids': documentIds,
+      };
+
+      if (outputName != null && outputName.isNotEmpty) {
+        requestBody['output_name'] = outputName;
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/merge'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(requestBody),
+      );
+
       final data = jsonDecode(response.body);
-      return data['documents']; // Trả về mảng documents
-    } else {
-      throw Exception('Không lấy được lịch sử');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (data['status'] == true) {
+          return data;
+        } else {
+          throw Exception(data['message'] ?? 'Lỗi gộp PDF');
+        }
+      } else if (response.statusCode == 401) {
+        throw Exception('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+      } else if (response.statusCode == 422) {
+        // Validation error
+        throw Exception(data['message'] ?? 'Dữ liệu không hợp lệ');
+      } else if (response.statusCode == 429) {
+        // Rate limit
+        throw Exception(data['message'] ?? 'Quá nhiều yêu cầu. Vui lòng thử lại sau.');
+      } else {
+        throw Exception(data['message'] ?? 'Lỗi server: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi mergePdfs: $e');
+      rethrow;
     }
   }
 
-  Future<void> deleteDocument(int id) async {
-    String? token = await _storage.read(key: 'auth_token');
-    final response = await http.delete(
-      Uri.parse('$baseUrl/documents/$id'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Lỗi khi xóa file');
-    }
-  }
-  // Lấy thông tin dung lượng
+  /// Lấy thông tin dung lượng - Backend chưa có route này
+  /// TODO: Cần thêm route trong backend
   Future<Map<String, dynamic>> getStorageUsage() async {
+    throw UnimplementedError('Backend chưa hỗ trợ storage usage. Cần thêm route /api/storage');
+
+    // Code tạm comment:
+    /*
     String? token = await _storage.read(key: 'auth_token');
     final response = await http.get(
       Uri.parse('$baseUrl/storage'),
@@ -122,52 +335,71 @@ class DocumentService {
     } else {
       throw Exception('Lỗi lấy thông tin dung lượng');
     }
-  }
-  // Hàm đổi tên tài liệu
-  Future<void> renameDocument(int id, String newName) async {
-    String? token = await _storage.read(key: 'auth_token');
-    final response = await http.put(
-      Uri.parse('$baseUrl/documents/$id'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json', // Quan trọng khi gửi body json
-        'Accept': 'application/json',
-      },
-      body: jsonEncode({'name': newName}), // Gửi tên mới lên
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Lỗi khi đổi tên file');
-    }
+    */
   }
 
-  // Hàm lấy thông tin user (Tên, Email)
+  // ==================== USER API ====================
+
+  /// Lấy thông tin user hiện tại
+  /// Backend: GET /api/get_user
   Future<Map<String, dynamic>> getUserInfo() async {
-    String? token = await _storage.read(key: 'auth_token');
-    // Gọi vào API /user có sẵn của Laravel
-    final response = await http.get(
-      Uri.parse('$baseUrl/user'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
-    );
+    try {
+      String? token = await _storage.read(key: 'auth_token');
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body); // Trả về {id, name, email...}
-    } else {
-      throw Exception('Không lấy được thông tin user');
+      if (token == null) {
+        throw Exception('Chưa đăng nhập');
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/get_user'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success'] == true && data['data'] != null) {
+          // Trả về data với format phù hợp cho ProfileScreen
+          return {
+            'name': data['data']['full_name'] ?? 'Người dùng',
+            'email': data['data']['email'] ?? '',
+            'username': data['data']['username'] ?? '',
+            'phone': data['data']['phone'] ?? '',
+            'photo': data['data']['photo'],
+            'address': data['data']['address'] ?? '',
+            'birthday': data['data']['birthday'],
+            'description': data['data']['description'] ?? '',
+          };
+        } else {
+          throw Exception(data['message'] ?? 'Không lấy được thông tin user');
+        }
+      } else if (response.statusCode == 401) {
+        throw Exception('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+      } else {
+        throw Exception('Lỗi server: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi getUserInfo: $e');
+      rethrow;
     }
   }
-  // Hàm cập nhật hồ sơ
+
+  /// Cập nhật hồ sơ user - Backend chưa có route
+  /// TODO: Cần thêm route trong backend
   Future<void> updateProfile(String name, String? currentPassword, String? newPassword) async {
+    throw UnimplementedError('Backend chưa hỗ trợ update profile. Cần thêm route /api/user/update');
+
+    // Code tạm comment:
+    /*
     String? token = await _storage.read(key: 'auth_token');
 
     Map<String, String> data = {'name': name};
 
-    // Nếu có đổi mật khẩu thì gửi cả mật khẩu cũ và mới đi
     if (newPassword != null && newPassword.isNotEmpty) {
-      data['current_password'] = currentPassword ?? ""; // Gửi key này cho Laravel check
+      data['current_password'] = currentPassword ?? "";
       data['password'] = newPassword;
       data['password_confirmation'] = newPassword;
     }
@@ -184,8 +416,8 @@ class DocumentService {
 
     if (response.statusCode != 200) {
       final body = jsonDecode(response.body);
-      // Ném lỗi ra để màn hình hiển thị (VD: Mật khẩu cũ sai)
       throw Exception(body['message'] ?? "Lỗi cập nhật hồ sơ");
     }
+    */
   }
 }

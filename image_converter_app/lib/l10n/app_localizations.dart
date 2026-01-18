@@ -98,6 +98,12 @@ abstract class AppLocalizations {
     Locale('vi'),
   ];
 
+  /// No description provided for @appName.
+  ///
+  /// In en, this message translates to:
+  /// **'SnapPDF'**
+  String get appName;
+
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:
@@ -823,6 +829,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Developer'**
   String get developer;
+
+  /// No description provided for @cannotOpenFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Can not open file'**
+  String get cannotOpenFile;
+
+  /// No description provided for @enterFileName.
+  ///
+  /// In en, this message translates to:
+  /// **' Enter your file name'**
+  String get enterFileName;
+
+  /// No description provided for @fileNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'New_file'**
+  String get fileNameHint;
+
+  /// No description provided for @useDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Use default'**
+  String get useDefault;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @pressBackAgainToExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Press back again to exit'**
+  String get pressBackAgainToExit;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get navFiles;
+
+  /// No description provided for @downloadedFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded Files'**
+  String get downloadedFiles;
+
+  /// No description provided for @selectedFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected {count} files'**
+  String selectedFiles(Object count);
+
+  /// No description provided for @totalSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Total: {size}'**
+  String totalSize(Object size);
+
+  /// No description provided for @selectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get selectAll;
+
+  /// No description provided for @selectMultiple.
+  ///
+  /// In en, this message translates to:
+  /// **'Select multiple'**
+  String get selectMultiple;
+
+  /// No description provided for @noFilesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No files yet'**
+  String get noFilesYet;
+
+  /// No description provided for @downloadedFilesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Files you download from Recent Files will appear here'**
+  String get downloadedFilesHint;
+
+  /// No description provided for @worksOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Works offline'**
+  String get worksOffline;
+
+  /// No description provided for @openFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Open file'**
+  String get openFile;
+
+  /// No description provided for @shareFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareFile;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @minutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} minutes ago'**
+  String minutesAgo(Object count);
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hours ago'**
+  String hoursAgo(Object count);
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days ago'**
+  String daysAgo(Object count);
+
+  /// No description provided for @confirmDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Delete'**
+  String get confirmDeleteTitle;
+
+  /// No description provided for @confirmDeleteSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{name}\" from device?'**
+  String confirmDeleteSingle(Object name);
+
+  /// No description provided for @confirmDeleteMultiple.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete {count} selected files?'**
+  String confirmDeleteMultiple(Object count);
+
+  /// No description provided for @cannotOpenFileError.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot open file: {message}'**
+  String cannotOpenFileError(Object message);
+
+  /// No description provided for @openFileError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error opening file: {error}'**
+  String openFileError(Object error);
+
+  /// No description provided for @shareError.
+  ///
+  /// In en, this message translates to:
+  /// **'Share error: {error}'**
+  String shareError(Object error);
+
+  /// No description provided for @sharedFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared from SnapPDF'**
+  String get sharedFrom;
 }
 
 class _AppLocalizationsDelegate

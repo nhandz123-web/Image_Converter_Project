@@ -3,6 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_converter_app/l10n/app_localizations.dart';
 import '../blocs/home_bloc.dart';
 import 'file_detail_screen.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_dimensions.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 
 class AllDocumentsScreen extends StatefulWidget {
   @override
@@ -27,52 +31,46 @@ class _AllDocumentsScreenState extends State<AllDocumentsScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? theme.scaffoldBackgroundColor : Colors.grey[50],
+      backgroundColor: AppTheme.getBackgroundColor(isDark),
       body: CustomScrollView(
         slivers: [
           // App Bar với gradient
           SliverAppBar(
             floating: false,
             pinned: true,
-            elevation: 0,
+            elevation: AppDimensions.elevation0,
             backgroundColor: theme.primaryColor,
-            toolbarHeight: 70,
+            toolbarHeight: AppDimensions.appBarHeight,
             automaticallyImplyLeading: false,
             flexibleSpace: Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDark
-                      ? [Color(0xFF1A237E), Color(0xFF0D47A1)]
-                      : [Color(0xFF667eea), Color(0xFF764ba2)],
-                ),
+                gradient: AppTheme.getPrimaryGradient(isDark),
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  padding: AppDimensions.paddingH8,
                   child: Row(
                     children: [
                       IconButton(
-                        icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.white),
                         onPressed: () => Navigator.pop(context),
                       ),
                       if (!_isSearching)
                         Expanded(
                           child: Text(
                             lang.allDocuments ?? "Tất cả tài liệu",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22,
+                            style: const TextStyle(
+                              color: AppColors.white,
+                              fontWeight: AppTextStyles.weightBold,
+                              fontSize: AppTextStyles.fontSize22,
                             ),
                           ),
                         ),
-                      if (_isSearching) Spacer(),
+                      if (_isSearching) const Spacer(),
                       IconButton(
                         icon: Icon(
                           _isSearching ? Icons.close_rounded : Icons.search_rounded,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                         onPressed: () {
                           setState(() {
@@ -323,7 +321,7 @@ class _AllDocumentsScreenState extends State<AllDocumentsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        doc['original_name'],
+                        doc['name']?.toString() ?? "Không có tên file",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -356,18 +354,18 @@ class _AllDocumentsScreenState extends State<AllDocumentsScreen> {
                                   : Colors.orange.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(
-                              doc['status'] == 'completed'
-                                  ? (lang.completed ?? 'Hoàn thành')
-                                  : (lang.processing ?? 'Đang xử lý'),
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: doc['status'] == 'completed'
-                                    ? Colors.green
-                                    : Colors.orange,
-                              ),
-                            ),
+                            // child: Text(
+                            //   doc['status'] == 'completed'
+                            //       ? (lang.completed ?? 'Hoàn thành')
+                            //       : (lang.processing ?? 'Đang xử lý'),
+                            //   style: TextStyle(
+                            //     fontSize: 11,
+                            //     fontWeight: FontWeight.w600,
+                            //     color: doc['status'] == 'completed'
+                            //         ? Colors.green
+                            //         : Colors.orange,
+                            //   ),
+                            // ),
                           ),
                         ],
                       ),

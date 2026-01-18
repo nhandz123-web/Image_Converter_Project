@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_converter_app/l10n/app_localizations.dart';
 import '../blocs/auth_bloc.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_dimensions.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -13,6 +17,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
   final _confirmPassController = TextEditingController();
+  final _phoneController = TextEditingController();      // 👈 THÊM
+  final _addressController = TextEditingController();    // 👈 THÊM
+
+  DateTime? _selectedBirthday;  // 👈 THÊM
+
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 
@@ -22,7 +31,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passController.dispose();
     _confirmPassController.dispose();
+    _phoneController.dispose();      // 👈 THÊM
+    _addressController.dispose();    // 👈 THÊM
     super.dispose();
+  }
+
+  // 👈 THÊM: Hàm chọn ngày sinh
+  Future<void> _selectBirthday(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedBirthday ?? DateTime(2000, 1, 1),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Theme.of(context).primaryColor,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _selectedBirthday) {
+      setState(() {
+        _selectedBirthday = picked;
+      });
+    }
+  }
+
+  // 👈 THÊM: Format ngày sinh
+  String _formatBirthday(DateTime? date) {
+    if (date == null) return '';
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  String _formatBirthdayDisplay(DateTime? date) {
+    if (date == null) return 'Chọn ngày sinh';
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   @override
@@ -37,11 +84,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           if (state is AuthSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(lang.registerSuccess ?? "Đăng ký thành công! Đang đăng nhập..."),
-                backgroundColor: Colors.green,
+                content: Text(lang.registerSuccess ?? "Đăng ký thành công!"),
+                backgroundColor: AppColors.success,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppDimensions.borderRadius10,
                 ),
               ),
             );
@@ -51,10 +98,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.error),
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.error,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppDimensions.borderRadius10,
                 ),
               ),
             );
@@ -63,24 +110,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         builder: (context, state) {
           return Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? [Color(0xFF1A237E), Color(0xFF0D47A1)]
-                    : [Color(0xFF667eea), Color(0xFF764ba2)],
-              ),
+              gradient: AppTheme.getPrimaryGradient(isDark),
             ),
             child: SafeArea(
               child: Column(
                 children: [
                   // AppBar tùy chỉnh
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    padding: AppDimensions.paddingH8V8,
                     child: Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.white),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
@@ -92,248 +133,184 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Center(
                       child: SingleChildScrollView(
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 24),
+                          padding: AppDimensions.paddingH24,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               // Logo và tiêu đề
                               Container(
-                                padding: EdgeInsets.all(20),
+                                padding: AppDimensions.paddingAll20,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
+                                  color: AppColors.white.withOpacity(AppColors.opacity15),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(
+                                child: const Icon(
                                   Icons.person_add_rounded,
-                                  size: 70,
-                                  color: Colors.white,
+                                  size: AppDimensions.iconSizeLarge,
+                                  color: AppColors.white,
                                 ),
                               ),
-                              SizedBox(height: 24),
+                              const SizedBox(height: AppDimensions.spacing20),
                               Text(
                                 lang.register ?? "Đăng ký",
-                                style: TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: 1,
+                                style: const TextStyle(
+                                  fontSize: AppTextStyles.fontSize28,
+                                  fontWeight: AppTextStyles.weightBold,
+                                  color: AppColors.white,
                                 ),
                               ),
-                              SizedBox(height: 8),
-                              Text(
-                                lang.createAccount ?? "Tạo tài khoản mới",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white.withOpacity(0.8),
-                                ),
-                              ),
-                              SizedBox(height: 32),
+                              const SizedBox(height: AppDimensions.spacing24),
 
                               // Card chứa form
                               Container(
-                                padding: EdgeInsets.all(24),
+                                padding: AppDimensions.paddingAll20,
                                 decoration: BoxDecoration(
                                   color: theme.cardColor,
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: AppDimensions.borderRadius20,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 20,
-                                      offset: Offset(0, 10),
+                                      color: AppColors.black.withOpacity(AppColors.opacity10),
+                                      blurRadius: AppDimensions.blurRadius20,
+                                      offset: const Offset(0, 10),
                                     ),
                                   ],
                                 ),
                                 child: Column(
                                   children: [
-                                    // Name field
-                                    TextField(
+                                    // Họ tên
+                                    _buildTextField(
                                       controller: _nameController,
-                                      style: TextStyle(fontSize: 16),
-                                      decoration: InputDecoration(
-                                        labelText: lang.fullName ?? "Họ và tên",
-                                        hintText: lang.enterFullName ?? "Nhập họ và tên",
-                                        prefixIcon: Icon(Icons.person_outline),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(
-                                            color: Colors.grey.withOpacity(0.3),
-                                          ),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(
-                                            color: theme.primaryColor,
-                                            width: 2,
-                                          ),
-                                        ),
-                                        filled: true,
-                                        fillColor: isDark
-                                            ? Colors.grey[850]
-                                            : Colors.grey[50],
-                                      ),
+                                      label: lang.fullName ?? "Họ và tên",
+                                      hint: "Nhập họ và tên",
+                                      icon: Icons.person_outline,
+                                      isDark: isDark,
+                                      theme: theme,
                                     ),
-                                    SizedBox(height: 16),
+                                    const SizedBox(height: AppDimensions.spacing14),
 
-                                    // Email field
-                                    TextField(
+                                    // Email
+                                    _buildTextField(
                                       controller: _emailController,
+                                      label: lang.email ?? "Email",
+                                      hint: "Nhập email",
+                                      icon: Icons.email_outlined,
                                       keyboardType: TextInputType.emailAddress,
-                                      style: TextStyle(fontSize: 16),
-                                      decoration: InputDecoration(
-                                        labelText: lang.email ?? "Email",
-                                        hintText: lang.enterEmail ?? "Nhập email của bạn",
-                                        prefixIcon: Icon(Icons.email_outlined),
-                                        border: OutlineInputBorder(
+                                      isDark: isDark,
+                                      theme: theme,
+                                    ),
+                                    SizedBox(height: 14),
+
+                                    // 👈 THÊM: Số điện thoại
+                                    _buildTextField(
+                                      controller: _phoneController,
+                                      label: "Số điện thoại",
+                                      hint: "Nhập số điện thoại",
+                                      icon: Icons.phone_outlined,
+                                      keyboardType: TextInputType.phone,
+                                      isDark: isDark,
+                                      theme: theme,
+                                    ),
+                                    const SizedBox(height: AppDimensions.spacing14),
+
+                                    // 👈 THÊM: Địa chỉ
+                                    _buildTextField(
+                                      controller: _addressController,
+                                      label: "Địa chỉ",
+                                      hint: "Nhập địa chỉ",
+                                      icon: Icons.location_on_outlined,
+                                      isDark: isDark,
+                                      theme: theme,
+                                    ),
+                                    const SizedBox(height: AppDimensions.spacing14),
+
+                                    // 👈 THÊM: Ngày sinh
+                                    GestureDetector(
+                                      onTap: () => _selectBirthday(context),
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? Colors.grey[850] : Colors.grey[50],
                                           borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(
+                                          border: Border.all(
                                             color: Colors.grey.withOpacity(0.3),
                                           ),
                                         ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(
-                                            color: theme.primaryColor,
-                                            width: 2,
-                                          ),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.cake_outlined, color: Colors.grey[600]),
+                                            SizedBox(width: 12),
+                                            Expanded(
+                                              child: Text(
+                                                _selectedBirthday != null
+                                                    ? _formatBirthdayDisplay(_selectedBirthday)
+                                                    : "Chọn ngày sinh",
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: _selectedBirthday != null
+                                                      ? null
+                                                      : Colors.grey[600],
+                                                ),
+                                              ),
+                                            ),
+                                            Icon(Icons.calendar_today, color: Colors.grey[600], size: 20),
+                                          ],
                                         ),
-                                        filled: true,
-                                        fillColor: isDark
-                                            ? Colors.grey[850]
-                                            : Colors.grey[50],
                                       ),
                                     ),
-                                    SizedBox(height: 16),
+                                    const SizedBox(height: AppDimensions.spacing14),
 
-                                    // Password field
-                                    TextField(
+                                    // Mật khẩu
+                                    _buildPasswordField(
                                       controller: _passController,
-                                      obscureText: !_isPasswordVisible,
-                                      style: TextStyle(fontSize: 16),
-                                      decoration: InputDecoration(
-                                        labelText: lang.password ?? "Mật khẩu",
-                                        hintText: lang.enterPassword ?? "Nhập mật khẩu",
-                                        prefixIcon: Icon(Icons.lock_outline),
-                                        suffixIcon: IconButton(
-                                          icon: Icon(
-                                            _isPasswordVisible
-                                                ? Icons.visibility_outlined
-                                                : Icons.visibility_off_outlined,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              _isPasswordVisible = !_isPasswordVisible;
-                                            });
-                                          },
-                                        ),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(
-                                            color: Colors.grey.withOpacity(0.3),
-                                          ),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(
-                                            color: theme.primaryColor,
-                                            width: 2,
-                                          ),
-                                        ),
-                                        filled: true,
-                                        fillColor: isDark
-                                            ? Colors.grey[850]
-                                            : Colors.grey[50],
-                                      ),
+                                      label: lang.password ?? "Mật khẩu",
+                                      hint: "Nhập mật khẩu",
+                                      isVisible: _isPasswordVisible,
+                                      onToggle: () {
+                                        setState(() {
+                                          _isPasswordVisible = !_isPasswordVisible;
+                                        });
+                                      },
+                                      isDark: isDark,
+                                      theme: theme,
                                     ),
-                                    SizedBox(height: 16),
+                                    SizedBox(height: 14),
 
-                                    // Confirm Password field
-                                    TextField(
+                                    // Nhập lại mật khẩu
+                                    _buildPasswordField(
                                       controller: _confirmPassController,
-                                      obscureText: !_isConfirmPasswordVisible,
-                                      style: TextStyle(fontSize: 16),
-                                      decoration: InputDecoration(
-                                        labelText: lang.confirmPassword ?? "Nhập lại mật khẩu",
-                                        hintText: lang.enterConfirmPassword ?? "Nhập lại mật khẩu",
-                                        prefixIcon: Icon(Icons.lock_outline),
-                                        suffixIcon: IconButton(
-                                          icon: Icon(
-                                            _isConfirmPasswordVisible
-                                                ? Icons.visibility_outlined
-                                                : Icons.visibility_off_outlined,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                                            });
-                                          },
-                                        ),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(
-                                            color: Colors.grey.withOpacity(0.3),
-                                          ),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(
-                                            color: theme.primaryColor,
-                                            width: 2,
-                                          ),
-                                        ),
-                                        filled: true,
-                                        fillColor: isDark
-                                            ? Colors.grey[850]
-                                            : Colors.grey[50],
-                                      ),
+                                      label: lang.confirmPassword ?? "Nhập lại mật khẩu",
+                                      hint: "Nhập lại mật khẩu",
+                                      isVisible: _isConfirmPasswordVisible,
+                                      onToggle: () {
+                                        setState(() {
+                                          _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                                        });
+                                      },
+                                      isDark: isDark,
+                                      theme: theme,
                                     ),
                                     SizedBox(height: 24),
 
                                     // Nút đăng ký
                                     SizedBox(
                                       width: double.infinity,
-                                      height: 56,
+                                      height: AppDimensions.buttonHeightLarge,
                                       child: ElevatedButton(
                                         onPressed: state is AuthLoading
                                             ? null
-                                            : () {
-                                          _onRegisterPressed(context, lang);
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: theme.primaryColor,
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          elevation: 2,
-                                        ),
+                                            : () => _onRegisterPressed(context, lang),
                                         child: state is AuthLoading
-                                            ? SizedBox(
-                                          height: 24,
-                                          width: 24,
+                                            ? const SizedBox(
+                                          height: AppDimensions.iconSizeRegular,
+                                          width: AppDimensions.iconSizeRegular,
                                           child: CircularProgressIndicator(
-                                            color: Colors.white,
+                                            color: AppColors.white,
                                             strokeWidth: 2.5,
                                           ),
                                         )
                                             : Text(
                                           lang.register ?? "Đăng ký",
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 0.5,
-                                          ),
+                                          style: AppTextStyles.buttonLarge,
                                         ),
                                       ),
                                     ),
@@ -341,7 +318,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                               ),
 
-                              SizedBox(height: 24),
+                              const SizedBox(height: AppDimensions.spacing20),
 
                               // Đã có tài khoản
                               Row(
@@ -349,26 +326,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 children: [
                                   Text(
                                     lang.haveAccount ?? "Đã có tài khoản?",
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
-                                      fontSize: 15,
-                                    ),
+                                    style: TextStyle(color: AppColors.white.withOpacity(AppColors.opacity90)),
                                   ),
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
                                     child: Text(
                                       lang.loginNow ?? "Đăng nhập ngay",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
+                                      style: const TextStyle(
+                                        color: AppColors.white,
+                                        fontWeight: AppTextStyles.weightBold,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-
-                              SizedBox(height: 20),
+                              const SizedBox(height: AppDimensions.spacing20),
                             ],
                           ),
                         ),
@@ -384,42 +356,118 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  // 👈 Widget helper cho TextField thường
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    required bool isDark,
+    required ThemeData theme,
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: const TextStyle(fontSize: AppTextStyles.fontSize16),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon),
+      ),
+    );
+  }
+
+  // 👈 Widget helper cho Password field
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required bool isVisible,
+    required VoidCallback onToggle,
+    required bool isDark,
+    required ThemeData theme,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: !isVisible,
+      style: const TextStyle(fontSize: AppTextStyles.fontSize16),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: const Icon(Icons.lock_outline),
+        suffixIcon: IconButton(
+          icon: Icon(isVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+          onPressed: onToggle,
+        ),
+      ),
+    );
+  }
+
+  // 👈 CẬP NHẬT: Hàm xử lý đăng ký
   void _onRegisterPressed(BuildContext context, AppLocalizations lang) {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passController.text;
     final confirmPass = _confirmPassController.text;
+    final phone = _phoneController.text.trim();
+    final address = _addressController.text.trim();
 
-    // Validate cơ bản
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(lang.fillAllFields ?? "Vui lòng nhập đủ thông tin"),
-          backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
+    // Validate
+    if (name.isEmpty || email.isEmpty || password.isEmpty ||
+        phone.isEmpty || address.isEmpty || _selectedBirthday == null) {
+      _showSnackBar(context, "Vui lòng nhập đầy đủ thông tin", Colors.orange);
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      _showSnackBar(context, "Email không hợp lệ", Colors.orange);
+      return;
+    }
+
+    if (password.length < 6) {
+      _showSnackBar(context, "Mật khẩu phải có ít nhất 6 ký tự", Colors.orange);
       return;
     }
 
     if (password != confirmPass) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(lang.passwordNotMatch ?? "Mật khẩu nhập lại không khớp"),
-          backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
+      _showSnackBar(context, lang.passwordNotMatch ?? "Mật khẩu không khớp", Colors.orange);
       return;
     }
 
-    // Gửi sự kiện đăng ký
-    context.read<AuthBloc>().add(RegisterRequested(name, email, password));
+    if (!_isValidPhone(phone)) {
+      _showSnackBar(context, "Số điện thoại không hợp lệ", Colors.orange);
+      return;
+    }
+
+    // Gửi event đăng ký
+    context.read<AuthBloc>().add(RegisterRequested(
+      fullname: name,
+      email: email,
+      password: password,
+      // confirmPassword: confirmPass,
+      phone: phone,
+      address: address,
+      birthday: _formatBirthday(_selectedBirthday),
+    ));
+  }
+
+  void _showSnackBar(BuildContext context, String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: AppDimensions.borderRadius10),
+      ),
+    );
+  }
+
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  bool _isValidPhone(String phone) {
+    return RegExp(r'^[0-9]{10,11}$').hasMatch(phone);
   }
 }

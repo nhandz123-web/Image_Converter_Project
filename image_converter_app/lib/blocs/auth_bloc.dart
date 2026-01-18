@@ -4,14 +4,32 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // --- Events (Hành động) ---
 abstract class AuthEvent {}
+
 class LoginRequested extends AuthEvent {
   final String email, password;
   LoginRequested(this.email, this.password);
 }
+
+// 🔥 CẬP NHẬT: Thêm các trường mới vào Event Đăng ký
 class RegisterRequested extends AuthEvent {
-  final String name, email, password;
-  RegisterRequested(this.name, this.email, this.password);
+  final String fullname;
+  final String email;
+  final String password;
+  final String phone;
+  final String address;
+  final String birthday;
+
+  // Dùng named parameter ({}) cho dễ nhìn và tránh nhầm lẫn vị trí
+  RegisterRequested({
+    required this.fullname,
+    required this.email,
+    required this.password,
+    required this.phone,
+    required this.address,
+    required this.birthday,
+  });
 }
+
 class LogoutRequested extends AuthEvent {}
 class CheckAuthRequested extends AuthEvent {}
 
@@ -31,46 +49,56 @@ class AuthLoggedOut extends AuthState {}
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthService authService;
   final _storage = const FlutterSecureStorage();
+
   AuthBloc(this.authService) : super(AuthInitial()) {
 
-    // Xử lý Login
+    // 1. Kiểm tra trạng thái đăng nhập (lúc mở app)
     on<CheckAuthRequested>((event, emit) async {
-      // Đọc token từ máy
       final token = await _storage.read(key: 'auth_token');
-
       if (token != null) {
-        emit(AuthSuccess()); // Có token -> Cho vào luôn
+        emit(AuthSuccess());
       } else {
-        emit(AuthLoggedOut()); // Không có -> Bắt đăng nhập
+        emit(AuthLoggedOut());
       }
     });
 
+    // 2. Xử lý Login
     on<LoginRequested>((event, emit) async {
-      emit(AuthLoading()); // Hiện vòng quay
-      final error = await authService.login(event.email, event.password);
-      if (error == null) {
-        emit(AuthSuccess()); // Chuyển màn hình
-      } else {
-        emit(AuthFailure(error)); // Hiện lỗi
-      }
-    });
-
-
-    // Xử lý Register
-    on<RegisterRequested>((event, emit) async {
       emit(AuthLoading());
-      final error = await authService.register(event.name, event.email, event.password);
+      final error = await authService.login(event.email, event.password);
       if (error == null) {
         emit(AuthSuccess());
       } else {
         emit(AuthFailure(error));
       }
     });
-    // đăng xuất
+
+    // 3. Xử lý Register (CẬP NHẬT)
+    on<RegisterRequested>((event, emit) async {
+      emit(AuthLoading());
+
+      // Gọi hàm register mới bên Service với đầy đủ tham số
+      final error = await authService.register(
+        name: event.fullname,
+        email: event.email,
+        password: event.password,
+        phone: event.phone,
+        address: event.address,
+        birthday: event.birthday,
+      );
+
+      if (error == null) {
+        emit(AuthSuccess());
+      } else {
+        emit(AuthFailure(error));
+      }
+    });
+
+    // 4. Đăng xuất
     on<LogoutRequested>((event, emit) async {
-      emit(AuthLoading()); // Hiện loading chút cho mượt
-      await authService.logout(); // Xóa token
-      emit(AuthLoggedOut()); // Báo ra ngoài là đã thoát
+      emit(AuthLoading());
+      await authService.logout();
+      emit(AuthLoggedOut());
     });
   }
 }

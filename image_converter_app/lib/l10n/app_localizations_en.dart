@@ -9,6 +9,9 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get appName => 'SnapPDF';
+
+  @override
   String get settings => 'Settings';
 
   @override
@@ -373,4 +376,112 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get developer => 'Developer';
+
+  @override
+  String get cannotOpenFile => 'Can not open file';
+
+  @override
+  String get enterFileName => ' Enter your file name';
+
+  @override
+  String get fileNameHint => 'New_file';
+
+  @override
+  String get useDefault => 'Use default';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get pressBackAgainToExit => 'Press back again to exit';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navFiles => 'Files';
+
+  @override
+  String get downloadedFiles => 'Downloaded Files';
+
+  @override
+  String selectedFiles(Object count) {
+    return 'Selected $count files';
+  }
+
+  @override
+  String totalSize(Object size) {
+    return 'Total: $size';
+  }
+
+  @override
+  String get selectAll => 'Select all';
+
+  @override
+  String get selectMultiple => 'Select multiple';
+
+  @override
+  String get noFilesYet => 'No files yet';
+
+  @override
+  String get downloadedFilesHint =>
+      'Files you download from Recent Files will appear here';
+
+  @override
+  String get worksOffline => 'Works offline';
+
+  @override
+  String get openFile => 'Open file';
+
+  @override
+  String get shareFile => 'Share';
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String minutesAgo(Object count) {
+    return '$count minutes ago';
+  }
+
+  @override
+  String hoursAgo(Object count) {
+    return '$count hours ago';
+  }
+
+  @override
+  String daysAgo(Object count) {
+    return '$count days ago';
+  }
+
+  @override
+  String get confirmDeleteTitle => 'Confirm Delete';
+
+  @override
+  String confirmDeleteSingle(Object name) {
+    return 'Are you sure you want to delete \"$name\" from device?';
+  }
+
+  @override
+  String confirmDeleteMultiple(Object count) {
+    return 'Are you sure you want to delete $count selected files?';
+  }
+
+  @override
+  String cannotOpenFileError(Object message) {
+    return 'Cannot open file: $message';
+  }
+
+  @override
+  String openFileError(Object error) {
+    return 'Error opening file: $error';
+  }
+
+  @override
+  String shareError(Object error) {
+    return 'Share error: $error';
+  }
+
+  @override
+  String get sharedFrom => 'Shared from SnapPDF';
 }

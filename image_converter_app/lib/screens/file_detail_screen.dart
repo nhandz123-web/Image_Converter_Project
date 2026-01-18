@@ -5,10 +5,20 @@ import 'package:intl/intl.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:share_plus/share_plus.dart'; // <--- THÊM MỚI
+import 'package:share_plus/share_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:image_converter_app/l10n/app_localizations.dart';
 import '../blocs/home_bloc.dart';
 import 'dart:convert';
+import 'package:device_info_plus/device_info_plus.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_dimensions.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
+import 'file_preview_screen.dart'; // Màn hình xem trước file inline
+import '../widgets/cached_image_widget.dart'; // Lazy loading images
+import '../config/api_config.dart'; // ✅ Import ApiConfig
+import '../services/local_file_service.dart'; // ✅ Import LocalFileService để lưu file đã tải
 
 class FileDetailScreen extends StatefulWidget {
   final Map<String, dynamic> document;
@@ -21,7 +31,10 @@ class FileDetailScreen extends StatefulWidget {
 
 class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerProviderStateMixin {
   bool isDownloading = false;
+  bool isPreviewing = false;
   late TabController _tabController;
+  // ✅ Sử dụng ApiConfig thay vì hardcode IP
+  final String baseUrl = '${ApiConfig.baseUrl}/';
 
   @override
   void initState() {
@@ -35,31 +48,195 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
     super.dispose();
   }
 
+  /// ✅ SỬA: Dùng API route thay vì storage/ symlink
   String _getFullUrl(String? path) {
-    if (path == null) return "";
+    if (path == null || path.isEmpty) return "";
+
+    // 1. Nếu đã là link đầy đủ (có http) thì trả về luôn
     if (path.startsWith('http')) return path;
-    return "http://10.224.9.12:8000/storage/$path";
+
+    // 2. Xử lý path sạch (bỏ dấu / ở đầu nếu có)
+    String cleanPath = path.startsWith('/') ? path.substring(1) : path;
+
+    // 3. Logic ghép đường dẫn chuẩn Laravel Storage
+    // Nếu path chưa có chữ 'storage', thì thêm vào.
+    // Ví dụ DB lưu: "convert/converted/file.pdf"
+    // Link đúng phải là: "http://10.85.33.12:8000/storage/convert/converted/file.pdf"
+
+    if (!cleanPath.startsWith('storage/')) {
+      return "${baseUrl}storage/$cleanPath";
+    }
+
+    return "$baseUrl$cleanPath";
   }
 
-  // --- HÀM CHIA SẺ FILE MỚI ---
-  Future<void> _shareFile(String url, String fileName) async {
+  // --- HÀM TẢI FILE VÀO THƯ MỤC RIÊNG CỦA APP ---
+  Future<void> _downloadAndOpenFile(String url, String fileName, AppLocalizations lang) async {
     setState(() => isDownloading = true);
+
     try {
-      final tempDir = await getTemporaryDirectory();
-      final tempPath = "${tempDir.path}/$fileName";
+      // --- BẮT ĐẦU: LOGIC KIỂM TRA QUYỀN MỚI ---
+      bool hasPermission = false;
+
+      if (Platform.isAndroid) {
+        final androidInfo = await DeviceInfoPlugin().androidInfo;
+
+        // Nếu là Android 13 (SDK 33) trở lên: KHÔNG CẦN xin quyền ghi file vào thư mục Download
+        if (androidInfo.version.sdkInt >= 33) {
+          hasPermission = true;
+        } else {
+          // Nếu là Android 12 trở xuống: Phải xin quyền Storage
+          var status = await Permission.storage.status;
+          if (!status.isGranted) {
+            status = await Permission.storage.request();
+          }
+          hasPermission = status.isGranted;
+        }
+      } else {
+        // iOS thì mặc định OK (lưu vào Documents của App)
+        hasPermission = true;
+      }
+      // --- KẾT THÚC: LOGIC KIỂM TRA QUYỀN ---
+
+      if (!hasPermission) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Bạn cần cấp quyền bộ nhớ để tải file"), backgroundColor: Colors.orange),
+        );
+        setState(() => isDownloading = false);
+        // Mở cài đặt để user cấp quyền thủ công nếu họ lỡ từ chối vĩnh viễn
+        openAppSettings();
+        return;
+      }
+
+      // --- TIẾN HÀNH TẢI FILE VÀO THƯ MỤC RIÊNG CỦA APP ---
+      // Tạo thư mục riêng cho app thay vì lưu vào Downloads công khai
+      const String appFolderName = 'SnapPDF_Files';
+      Directory appDir;
       
-      await Dio().download(url, tempPath);
+      if (Platform.isAndroid) {
+        // Lưu vào thư mục Documents của app (an toàn hơn)
+        appDir = await getApplicationDocumentsDirectory();
+      } else {
+        appDir = await getApplicationDocumentsDirectory();
+      }
       
-      if (!mounted) return;
-      await Share.shareXFiles([XFile(tempPath)], text: 'Gửi bạn tài liệu PDF');
-    } catch (e) {
+      // Tạo thư mục con cho app
+      final appFilesDir = Directory('${appDir.path}/$appFolderName');
+      if (!await appFilesDir.exists()) {
+        await appFilesDir.create(recursive: true);
+      }
+      
+      String savePath = '${appFilesDir.path}/$fileName';
+
+      // Xử lý trùng tên file (tự động thêm số đếm)
+      int count = 1;
+      String finalPath = savePath;
+      while (File(finalPath).existsSync()) {
+        final nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+        final ext = fileName.substring(fileName.lastIndexOf('.'));
+        finalPath = '${appFilesDir.path}/$nameWithoutExt ($count)$ext';
+        count++;
+      }
+
+      // ✅ Debug: In ra URL để kiểm tra
+      print("📥 Downloading from URL: $url");
+      print("💾 Saving to: $finalPath");
+
+      await Dio().download(url, finalPath);
+
+      // ✅ MỚI: Lưu file vào LocalFileService để hiển thị trong tab "File đã tải"
+      final localFileService = LocalFileService();
+      final fileType = fileName.contains('.') 
+          ? fileName.split('.').last.toLowerCase() 
+          : 'unknown';
+      final savedFile = await localFileService.addExistingFile(
+        filePath: finalPath,
+        fileName: fileName,
+        fileType: fileType,
+        originalName: widget.document['name']?.toString(),
+      );
+      
+      if (savedFile != null) {
+        print("✅ File đã được lưu vào danh sách Downloaded Files: ${savedFile.name}");
+      }
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi khi chia sẻ file"), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text("Đã lưu vào: SnapPDF_Files/${finalPath.split('/').last}"),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: "MỞ NGAY",
+            textColor: AppColors.white,
+            onPressed: () => OpenFilex.open(finalPath),
+          ),
+        ),
+      );
+
+    } catch (e) {
+      print("❌ Lỗi tải: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi tải file: $e"), backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) setState(() => isDownloading = false);
     }
+  }
+
+  // --- HÀM CHIA SẺ ---
+  Future<void> _shareFile(String url, String fileName) async {
+    setState(() => isDownloading = true);
+    try {
+      // Lưu vào thư mục cache (tạm thời) để chia sẻ
+      final tempDir = await getTemporaryDirectory();
+      final tempPath = "${tempDir.path}/$fileName";
+
+      print("📤 Sharing file from URL: $url");
+      await Dio().download(url, tempPath);
+
+      if (!mounted) return;
+      // Dùng Share.shareXFiles (bản mới nhất của share_plus)
+      final result = await Share.shareXFiles(
+          [XFile(tempPath)],
+          text: 'Chia sẻ tài liệu từ Image Converter'
+      );
+
+      if (result.status == ShareResultStatus.success) {
+        print("✅ Đã chia sẻ thành công");
+      }
+    } catch (e) {
+      print("❌ Lỗi khi chia sẻ: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi khi chia sẻ"), backgroundColor: AppColors.error),
+      );
+    } finally {
+      if (mounted) setState(() => isDownloading = false);
+    }
+  }
+
+  // --- HÀM XEM TRƯỚC FILE (INLINE TRONG APP) ---
+  void _previewFile(String url, String fileName, AppLocalizations lang) {
+    // Lấy file type từ extension
+    String fileType = 'pdf';
+    if (fileName.contains('.')) {
+      fileType = fileName.split('.').last.toLowerCase();
+    }
+
+    // Mở màn hình preview inline
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FilePreviewScreen(
+          fileUrl: url,
+          fileName: fileName,
+          fileType: fileType,
+        ),
+      ),
+    );
   }
 
   void _showRenameDialog(BuildContext context, String currentName, AppLocalizations lang) {
@@ -70,36 +247,25 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: AppDimensions.borderRadius20),
+        backgroundColor: isDark ? AppColors.grey900 : AppColors.white,
         title: Row(
           children: [
             Icon(Icons.edit_rounded, color: theme.primaryColor),
-            SizedBox(width: 10),
+            const SizedBox(width: AppDimensions.spacing10),
             Text(
               lang.renameFile ?? "Đổi tên file",
-              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              style: TextStyle(color: isDark ? AppColors.white : AppColors.black87),
             ),
           ],
         ),
         content: TextField(
           controller: _nameController,
-          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+          style: TextStyle(color: isDark ? AppColors.white : AppColors.black87),
           decoration: InputDecoration(
             labelText: lang.newName ?? "Tên mới",
-            labelStyle: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[700]),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[300]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: theme.primaryColor),
-            ),
-            prefixIcon: Icon(Icons.description_rounded, color: isDark ? Colors.grey[400] : Colors.grey[600]),
-            filled: true,
-            fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
+            labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(isDark)),
+            prefixIcon: Icon(Icons.description_rounded, color: AppTheme.getSecondaryTextColor(isDark)),
           ),
           autofocus: true,
         ),
@@ -108,7 +274,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               lang.cancel ?? "Hủy",
-              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600]),
+              style: TextStyle(color: AppTheme.getSecondaryTextColor(isDark)),
             ),
           ),
           ElevatedButton(
@@ -118,17 +284,41 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
                     RenameDocumentRequested(widget.document['id'], _nameController.text)
                 );
                 setState(() {
-                  widget.document['original_name'] = _nameController.text;
+                  widget.document['name'] = _nameController.text;
                 });
                 Navigator.pop(ctx);
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.primaryColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(borderRadius: AppDimensions.borderRadius10),
             ),
             child: Text(lang.save ?? "Lưu"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirm(BuildContext context, AppLocalizations lang) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: AppDimensions.borderRadius20),
+        backgroundColor: isDark ? AppColors.grey900 : AppColors.white,
+        title: Text(lang.confirmDelete ?? "Xóa file?", style: TextStyle(color: isDark ? AppColors.white : AppColors.black)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Hủy")),
+          ElevatedButton(
+            onPressed: () {
+              context.read<HomeBloc>().add(DeleteDocumentRequested(widget.document['id']));
+              Navigator.pop(ctx);
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.red),
+            child: const Text("Xóa"),
           ),
         ],
       ),
@@ -142,8 +332,20 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
     final isDark = theme.brightness == Brightness.dark;
     final document = widget.document;
 
-    final date = DateTime.parse(document['created_at']);
-    final formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(date);
+    // ✅ CRITICAL FIX: Safe DateTime parsing với try-catch
+    String formattedDate;
+    try {
+      final createdAt = document['created_at'];
+      if (createdAt == null || createdAt.toString().isEmpty) {
+        formattedDate = 'Không xác định';
+      } else {
+        final date = DateTime.parse(createdAt.toString());
+        formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(date);
+      }
+    } catch (e) {
+      formattedDate = 'Không xác định';
+      print('⚠️ Lỗi parse DateTime: $e');
+    }
 
     final int sizeBytes = document['size'] ?? 0;
     String sizeStr = sizeBytes > 1024 * 1024
@@ -153,7 +355,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
     final pdfUrl = _getFullUrl(document['path']);
 
     return Scaffold(
-      backgroundColor: isDark ? Colors.grey[900] : Colors.grey[50],
+      backgroundColor: isDark ? AppColors.grey900 : AppColors.grey50,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
@@ -176,13 +378,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: isDark
-                          ? [Color(0xFF1A237E), Color(0xFF0D47A1)]
-                          : [Color(0xFF667eea), Color(0xFF764ba2)],
-                    ),
+                    gradient: AppTheme.getPrimaryGradient(isDark),
                   ),
                   child: SafeArea(
                     child: Column(
@@ -205,7 +401,8 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 20),
                           child: Text(
-                            document['original_name'],
+                            // SỬA LỖI: Đổi 'original_name' thành 'name' và thêm giá trị mặc định
+                            document['name']?.toString() ?? "Không có tên file",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -359,7 +556,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
                             ),
                             SizedBox(height: 4),
                             Text(
-                              document['original_name'],
+                              document['name']?.toString() ?? "Không có tên file",
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -375,7 +572,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
                         icon: Icon(Icons.edit_rounded, color: Colors.blue),
                         onPressed: () => _showRenameDialog(
                           context,
-                          document['original_name'],
+                          document['name']?.toString() ?? '',
                           lang,
                         ),
                       ),
@@ -387,28 +584,51 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
                 Divider(height: 1, indent: 70, color: isDark ? Colors.grey[800] : Colors.grey[200]),
                 _buildModernInfoRow(Icons.calendar_today_rounded, lang.createdDate ?? "Ngày tạo", formattedDate, Colors.green),
                 Divider(height: 1, indent: 70, color: isDark ? Colors.grey[800] : Colors.grey[200]),
-                _buildModernInfoRow(Icons.check_circle_rounded, lang.status ?? "Trạng thái", document['status'] == 'completed' ? (lang.completed ?? 'Hoàn thành') : (lang.processing ?? 'Đang xử lý'), document['status'] == 'completed' ? Colors.green : Colors.orange),
+                _buildModernInfoRow(Icons.check_circle_rounded, lang.status ?? "Trạng thái", (document['status'] ?? 'completed') == 'completed' ? (lang.completed ?? 'Hoàn thành') : (lang.processing ?? 'Đang xử lý'), (document['status'] ?? 'completed') == 'completed' ? Colors.green : Colors.orange),
               ],
             ),
           ),
           SizedBox(height: 25),
-          
-          // --- PHẦN THAY THẾ: NÚT DOWNLOAD VÀ NÚT SHARE NẰM CẠNH NHAU ---
+
+          // --- NÚT DOWNLOAD VÀ NÚT SHARE ---
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
+                // Nút Download
                 Expanded(
-                  flex: 5,
-                  child: _buildModernDownloadButton(pdfUrl, document['original_name'], lang, theme),
+                  flex: 4,
+                  child: _buildModernDownloadButton(pdfUrl, document['name']?.toString() ?? "Không có tên file", lang, theme),
                 ),
-                SizedBox(width: 12),
+                SizedBox(width: 10),
+                // Nút Xem trước (inline trong app)
                 Expanded(
                   flex: 1,
                   child: Container(
-                    height: 58, // Khớp chiều cao nút download
+                    height: 58,
                     child: ElevatedButton(
-                      onPressed: isDownloading ? null : () => _shareFile(pdfUrl, document['original_name']),
+                      onPressed: () => _previewFile(pdfUrl, document['name']?.toString() ?? "file.pdf", lang),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: Icon(Icons.visibility_rounded, size: 24),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                // Nút Share
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    height: 58,
+                    child: ElevatedButton(
+                      onPressed: isDownloading ? null : () => _shareFile(pdfUrl, document['name']?.toString() ?? "Không có tên file"),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isDark ? Colors.grey[800] : Colors.white,
                         foregroundColor: theme.primaryColor,
@@ -419,9 +639,9 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
                         ),
                         padding: EdgeInsets.zero,
                       ),
-                      child: isDownloading 
-                        ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : Icon(Icons.share_rounded, size: 24),
+                      child: isDownloading
+                          ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          : Icon(Icons.share_rounded, size: 24),
                     ),
                   ),
                 ),
@@ -514,41 +734,112 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
     );
   }
 
+  /// ✅ HÀM BUILD IMAGE TAB - Hiển thị TẤT CẢ ảnh gốc từ storage
   Widget _buildImageTab(Map<String, dynamic> document, AppLocalizations lang, bool isDark) {
-    var rawPath = document['original_path'];
-    if (rawPath == null) return _buildEmptyState(Icons.image_not_supported_rounded, lang.noOriginalImage ?? "Không tìm thấy ảnh gốc");
-
+    // 1. Tạo list ảnh để hiển thị
     List<String> imagePaths = [];
-    try {
-      List<dynamic> parsedList = jsonDecode(rawPath);
-      imagePaths = parsedList.map((e) => e.toString()).toList();
-    } catch (e) {
-      imagePaths.add(rawPath.toString());
+
+    // 2. Ưu tiên lấy từ source_images_paths (array chứa TẤT CẢ ảnh gốc)
+    var sourceImagesPaths = document['source_images_paths'];
+    if (sourceImagesPaths != null && sourceImagesPaths is List && sourceImagesPaths.isNotEmpty) {
+      for (var path in sourceImagesPaths) {
+        if (path != null && path.toString().isNotEmpty) {
+          imagePaths.add(path.toString());
+        }
+      }
+      print("📷 Source Images Paths: $imagePaths");
     }
 
-    if (imagePaths.isEmpty) return _buildEmptyState(Icons.folder_open_rounded, lang.oldFileNoImage ?? "Không có ảnh gốc!");
+    // 3. Fallback: Nếu không có source_images_paths, thử lấy input_path (ảnh đầu tiên)
+    if (imagePaths.isEmpty) {
+      var inputPath = document['input_path'];
+      if (inputPath != null && inputPath.toString().isNotEmpty) {
+        imagePaths.add(inputPath.toString());
+        print("📷 Fallback to Input Path: $inputPath");
+      }
+    }
 
+    // 4. Fallback cuối: Nếu file hiện tại là ảnh, hiển thị chính nó
+    if (imagePaths.isEmpty &&
+        (document['type'] == 'jpg' || document['type'] == 'png' || document['type'] == 'jpeg')) {
+      var path = document['path'];
+      if (path != null && path.toString().isNotEmpty) {
+        imagePaths.add(path.toString());
+        print("📷 Fallback to current file path: $path");
+      }
+    }
+
+    // 5. Nếu list rỗng -> Hiện thông báo
+    if (imagePaths.isEmpty) {
+      return _buildEmptyState(
+          Icons.image_not_supported_rounded,
+          lang.noOriginalImage ?? "Không tìm thấy ảnh gốc"
+      );
+    }
+
+    // 6. Hiển thị danh sách ảnh
     return Container(
       color: isDark ? Colors.black : Colors.grey[900],
       child: ListView.separated(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         itemCount: imagePaths.length,
-        separatorBuilder: (_, __) => SizedBox(height: 25),
+        separatorBuilder: (_, __) => const SizedBox(height: 25),
         itemBuilder: (context, index) {
+          // Hàm này sẽ tự thêm "http://IP/storage/..." vào trước
           final imgUrl = _getFullUrl(imagePaths[index]);
+          print("🖼️ Loading URL: $imgUrl");
+
           return Column(
             children: [
+              // Header đếm số trang (nếu có nhiều ảnh)
               if (imagePaths.length > 1)
                 Container(
-                  margin: EdgeInsets.only(bottom: 12),
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-                  child: Text("${lang.image ?? "Ảnh"} ${index + 1}", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20)
+                  ),
+                  child: Text(
+                      "${lang.image ?? "Ảnh"} ${index + 1} / ${imagePaths.length}",
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                  ),
                 ),
+
+              // Khung hiển thị ảnh với Lazy Loading + Caching
               ClipRRect(
                 borderRadius: BorderRadius.circular(15),
-                child: InteractiveViewer(
-                  child: Image.network(imgUrl, fit: BoxFit.contain),
+                child: Container(
+                  height: 400, // Đặt chiều cao cố định để không bị lỗi layout
+                  decoration: BoxDecoration(
+                    color: Colors.black, // Nền đen cho ảnh nổi bật
+                    boxShadow: [
+                      BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 5)),
+                    ],
+                  ),
+                  child: InteractiveViewer(
+                    minScale: 0.5,
+                    maxScale: 4.0,
+                    // ✅ Sử dụng CachedImageWidget thay vì Image.network
+                    child: CachedImageWidget(
+                      imageUrl: imgUrl,
+                      height: 400,
+                      fit: BoxFit.contain, // Đảm bảo ảnh hiển thị trọn vẹn
+                      showProgressIndicator: true,
+                      fadeInDuration: const Duration(milliseconds: 300),
+                      placeholderColor: Colors.black,
+                      errorWidget: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image_rounded, color: Colors.grey, size: 50),
+                            const SizedBox(height: 8),
+                            Text("Lỗi tải ảnh", style: TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -566,52 +857,16 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
         children: [
           Icon(icon, size: 80, color: isDark ? Colors.grey[600] : Colors.grey[400]),
           SizedBox(height: 20),
-          Text(message, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16), textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _downloadAndOpenFile(String url, String fileName, AppLocalizations lang) async {
-    setState(() => isDownloading = true);
-    try {
-      String savePath;
-      if (Platform.isAndroid) {
-        savePath = "/storage/emulated/0/Download/$fileName";
-      } else {
-        final dir = await getApplicationDocumentsDirectory();
-        savePath = "${dir.path}/$fileName";
-      }
-      await Dio().download(url, savePath);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lưu tại: Download/$fileName"), backgroundColor: Colors.green));
-      await OpenFilex.open(savePath);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lỗi tải file"), backgroundColor: Colors.red));
-    } finally {
-      if (mounted) setState(() => isDownloading = false);
-    }
-  }
-
-  void _showDeleteConfirm(BuildContext context, AppLocalizations lang) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: isDark ? Colors.grey[900] : Colors.white,
-        title: Text(lang.confirmDelete ?? "Xóa file?", style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text("Hủy")),
-          ElevatedButton(
-            onPressed: () {
-              context.read<HomeBloc>().add(DeleteDocumentRequested(widget.document['id']));
-              Navigator.pop(ctx);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text("Xóa"),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              message,
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),

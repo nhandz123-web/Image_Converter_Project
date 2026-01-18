@@ -4,6 +4,10 @@ import 'package:image_converter_app/l10n/app_localizations.dart';
 import '../blocs/theme_cubit.dart';
 import '../blocs/language_cubit.dart';
 import '../blocs/font_size_cubit.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_dimensions.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
   @override
@@ -13,44 +17,38 @@ class SettingsScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? theme.scaffoldBackgroundColor : Colors.grey[50],
+      backgroundColor: isDark ? theme.scaffoldBackgroundColor : AppColors.backgroundLight,
 
       // --- AppBar với Gradient ---
       appBar: AppBar(
-        elevation: 0,
+        elevation: AppDimensions.elevation0,
         centerTitle: true,
         title: Text(
           lang.settings ?? "Cài đặt",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+          style: const TextStyle(
+            fontWeight: AppTextStyles.weightBold,
+            color: AppColors.white,
           ),
         ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDark
-                  ? [Color(0xFF1A237E), Color(0xFF0D47A1)]
-                  : [Color(0xFF667eea), Color(0xFF764ba2)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: AppTheme.getPrimaryGradient(isDark),
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
 
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: AppDimensions.paddingAll16,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // --- SECTION: Hiển thị ---
             _buildSectionTitle(lang.display ?? "Hiển thị", theme),
-            SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacing12),
 
             // --- 1. DARK MODE ---
             BlocBuilder<ThemeCubit, ThemeMode>(
@@ -60,38 +58,35 @@ class SettingsScreen extends StatelessWidget {
                   isDark: isDark,
                   theme: theme,
                   child: SwitchListTile(
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    contentPadding: AppDimensions.paddingH16V8,
                     secondary: Container(
-                      padding: EdgeInsets.all(10),
+                      padding: AppDimensions.paddingAll10,
                       decoration: BoxDecoration(
-                        color: (isDarkMode ? Colors.purple : Colors.orange)
-                            .withOpacity(isDark ? 0.2 : 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        color: (isDarkMode ? AppColors.purple : AppColors.orange)
+                            .withOpacity(isDark ? AppColors.opacity20 : AppColors.opacity10),
+                        borderRadius: AppDimensions.borderRadius12,
                       ),
                       child: Icon(
                         isDarkMode ? Icons.dark_mode : Icons.light_mode,
                         color: isDarkMode
-                            ? (isDark ? Colors.purple[300] : Colors.purple)
-                            : (isDark ? Colors.orange[300] : Colors.orange),
-                        size: 24,
+                            ? (isDark ? AppColors.purple300 : AppColors.purple)
+                            : (isDark ? AppColors.orange300 : AppColors.orange),
+                        size: AppDimensions.iconSizeRegular,
                       ),
                     ),
                     title: Text(
                       lang.darkMode ?? "Chế độ tối",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
+                      style: AppTextStyles.subtitleBold,
                     ),
                     subtitle: Text(
                       isDarkMode ? (lang.enabled ?? "Đang bật") : (lang.disabled ?? "Đang tắt"),
                       style: TextStyle(
-                        fontSize: 13,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        fontSize: AppTextStyles.fontSize13,
+                        color: AppTheme.getSecondaryTextColor(isDark),
                       ),
                     ),
                     value: isDarkMode,
-                    activeColor: isDark ? Colors.purple[300] : Colors.purple,
+                    activeColor: isDark ? AppColors.purple300 : AppColors.purple,
                     onChanged: (val) {
                       context.read<ThemeCubit>().toggleTheme(val);
                     },
@@ -100,7 +95,7 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
 
-            SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacing12),
 
             // --- 2. CỠ CHỮ (MAX 120%) ---
             BlocBuilder<FontSizeCubit, double>(
@@ -113,56 +108,56 @@ class SettingsScreen extends StatelessWidget {
                   isDark: isDark,
                   theme: theme,
                   child: Padding(
-                    padding: EdgeInsets.all(16),
+                    padding: AppDimensions.paddingAll16,
                     child: Column(
                       children: [
                         // Header
                         Row(
                           children: [
                             Container(
-                              padding: EdgeInsets.all(10),
+                              padding: AppDimensions.paddingAll10,
                               decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(isDark ? 0.2 : 0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                color: AppColors.blue.withOpacity(isDark ? AppColors.opacity20 : AppColors.opacity10),
+                                borderRadius: AppDimensions.borderRadius12,
                               ),
                               child: Icon(
                                 Icons.text_fields,
-                                color: isDark ? Colors.blue[300] : Colors.blue,
-                                size: 24,
+                                color: isDark ? AppColors.blue300 : AppColors.blue,
+                                size: AppDimensions.iconSizeRegular,
                               ),
                             ),
-                            SizedBox(width: 16),
+                            const SizedBox(width: AppDimensions.spacing16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     lang.fontSize ?? "Cỡ chữ",
-                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                                    style: AppTextStyles.subtitleBold,
                                   ),
                                   Row(
                                     children: [
                                       Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        padding: AppDimensions.paddingH8V2,
                                         decoration: BoxDecoration(
-                                          color: theme.primaryColor.withOpacity(0.15),
-                                          borderRadius: BorderRadius.circular(6),
+                                          color: theme.primaryColor.withOpacity(AppColors.opacity15),
+                                          borderRadius: AppDimensions.borderRadius6,
                                         ),
                                         child: Text(
                                           "${(clampedSize * 100).round()}%",
                                           style: TextStyle(
-                                            fontSize: 13,
-                                            color: isDark ? Colors.blue[300] : theme.primaryColor,
-                                            fontWeight: FontWeight.bold,
+                                            fontSize: AppTextStyles.fontSize13,
+                                            color: isDark ? AppColors.blue300 : theme.primaryColor,
+                                            fontWeight: AppTextStyles.weightBold,
                                           ),
                                         ),
                                       ),
-                                      SizedBox(width: 8),
+                                      const SizedBox(width: AppDimensions.spacing8),
                                       Text(
                                         "(${lang.max ?? "Tối đa"}: 120%)",
                                         style: TextStyle(
-                                          fontSize: 11,
-                                          color: isDark ? Colors.grey[500] : Colors.grey[500],
+                                          fontSize: AppTextStyles.fontSize11,
+                                          color: AppColors.grey500,
                                         ),
                                       ),
                                     ],
@@ -173,7 +168,7 @@ class SettingsScreen extends StatelessWidget {
                           ],
                         ),
 
-                        SizedBox(height: 16),
+                        const SizedBox(height: AppDimensions.spacing16),
 
                         // Slider
                         Row(
@@ -181,20 +176,20 @@ class SettingsScreen extends StatelessWidget {
                             Text(
                               "80%",
                               style: TextStyle(
-                                fontSize: 11,
-                                color: isDark ? Colors.grey[500] : Colors.grey[500],
+                                fontSize: AppTextStyles.fontSize11,
+                                color: AppColors.grey500,
                               ),
                             ),
                             Expanded(
                               child: SliderTheme(
                                 data: SliderTheme.of(context).copyWith(
-                                  activeTrackColor: isDark ? Colors.blue[300] : theme.primaryColor,
-                                  inactiveTrackColor: isDark ? Colors.grey[700] : Colors.grey[300],
-                                  thumbColor: isDark ? Colors.blue[300] : theme.primaryColor,
-                                  overlayColor: theme.primaryColor.withOpacity(0.2),
-                                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10),
-                                  overlayShape: RoundSliderOverlayShape(overlayRadius: 20),
-                                  trackHeight: 6,
+                                  activeTrackColor: isDark ? AppColors.blue300 : theme.primaryColor,
+                                  inactiveTrackColor: isDark ? AppColors.grey700 : AppColors.grey300,
+                                  thumbColor: isDark ? AppColors.blue300 : theme.primaryColor,
+                                  overlayColor: theme.primaryColor.withOpacity(AppColors.opacity20),
+                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: AppDimensions.sliderThumbRadius),
+                                  overlayShape: const RoundSliderOverlayShape(overlayRadius: AppDimensions.sliderOverlayRadius),
+                                  trackHeight: AppDimensions.sliderTrackHeight,
                                 ),
                                 child: Slider(
                                   value: clampedSize,
@@ -211,25 +206,25 @@ class SettingsScreen extends StatelessWidget {
                             Text(
                               "120%",
                               style: TextStyle(
-                                fontSize: 11,
-                                color: isDark ? Colors.grey[500] : Colors.grey[500],
-                                fontWeight: FontWeight.w500,
+                                fontSize: AppTextStyles.fontSize11,
+                                color: AppColors.grey500,
+                                fontWeight: AppTextStyles.weightMedium,
                               ),
                             ),
                           ],
                         ),
 
-                        SizedBox(height: 12),
+                        const SizedBox(height: AppDimensions.spacing12),
 
                         // Preset Buttons
                         Text(
                           lang.quickSelect ?? "Chọn nhanh:",
                           style: TextStyle(
-                            fontSize: 12,
-                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            fontSize: AppTextStyles.fontSize12,
+                            color: AppTheme.getSecondaryTextColor(isDark),
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: AppDimensions.spacing8),
                         Row(
                           children: presets.map((preset) {
                             final isSelected = (clampedSize * 10).round() == (preset * 10).round();
@@ -237,19 +232,19 @@ class SettingsScreen extends StatelessWidget {
                               child: GestureDetector(
                                 onTap: () => context.read<FontSizeCubit>().changeSize(preset),
                                 child: AnimatedContainer(
-                                  duration: Duration(milliseconds: 200),
-                                  margin: EdgeInsets.symmetric(horizontal: 3),
-                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                  duration: const Duration(milliseconds: 200),
+                                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                                  padding: AppDimensions.paddingV10,
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? (isDark ? Colors.blue[300] : theme.primaryColor)
-                                        : (isDark ? Colors.grey[800] : Colors.grey[100]),
-                                    borderRadius: BorderRadius.circular(10),
+                                        ? (isDark ? AppColors.blue300 : theme.primaryColor)
+                                        : (isDark ? AppColors.grey800 : AppColors.grey100),
+                                    borderRadius: AppDimensions.borderRadius10,
                                     border: Border.all(
                                       color: isSelected
-                                          ? (isDark ? Colors.blue[300]! : theme.primaryColor)
-                                          : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
-                                      width: isSelected ? 2 : 1,
+                                          ? (isDark ? AppColors.blue300 : theme.primaryColor)
+                                          : (isDark ? AppColors.grey700 : AppColors.grey300),
+                                      width: isSelected ? AppDimensions.borderWidth2 : AppDimensions.borderWidth1,
                                     ),
                                   ),
                                   child: Column(
@@ -257,10 +252,10 @@ class SettingsScreen extends StatelessWidget {
                                       Text(
                                         "${(preset * 100).round()}%",
                                         style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                          fontSize: AppTextStyles.fontSize12,
+                                          fontWeight: isSelected ? AppTextStyles.weightBold : AppTextStyles.weightMedium,
                                           color: isSelected
-                                              ? (isDark ? Colors.black : Colors.white)
+                                              ? (isDark ? AppColors.black : AppColors.white)
                                               : null,
                                         ),
                                       ),
@@ -268,10 +263,10 @@ class SettingsScreen extends StatelessWidget {
                                         Text(
                                           lang.defaultSize ?? "Mặc định",
                                           style: TextStyle(
-                                            fontSize: 9,
+                                            fontSize: AppTextStyles.fontSize9,
                                             color: isSelected
                                                 ? (isDark ? Colors.black54 : Colors.white70)
-                                                : (isDark ? Colors.grey[500] : Colors.grey[500]),
+                                                : AppColors.grey500,
                                           ),
                                         ),
                                     ],
@@ -282,17 +277,17 @@ class SettingsScreen extends StatelessWidget {
                           }).toList(),
                         ),
 
-                        SizedBox(height: 14),
+                        const SizedBox(height: AppDimensions.spacing14),
 
                         // Preview
                         Container(
                           width: double.infinity,
-                          padding: EdgeInsets.all(14),
+                          padding: AppDimensions.paddingAll14,
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.black26 : Colors.grey[50],
-                            borderRadius: BorderRadius.circular(12),
+                            color: isDark ? Colors.black26 : AppColors.grey50,
+                            borderRadius: AppDimensions.borderRadius12,
                             border: Border.all(
-                              color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                              color: isDark ? AppColors.grey800 : AppColors.grey200,
                             ),
                           ),
                           child: Column(
@@ -302,48 +297,48 @@ class SettingsScreen extends StatelessWidget {
                                 children: [
                                   Icon(
                                     Icons.visibility_rounded,
-                                    size: 14,
-                                    color: isDark ? Colors.grey[500] : Colors.grey[500],
+                                    size: AppDimensions.iconSizeSmall,
+                                    color: AppColors.grey500,
                                   ),
-                                  SizedBox(width: 6),
+                                  const SizedBox(width: AppDimensions.spacing6),
                                   Text(
                                     lang.preview ?? "Xem trước",
                                     style: TextStyle(
-                                      fontSize: 11,
-                                      color: isDark ? Colors.grey[500] : Colors.grey[500],
+                                      fontSize: AppTextStyles.fontSize11,
+                                      color: AppColors.grey500,
                                     ),
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 8),
+                              const SizedBox(height: AppDimensions.spacing8),
                               Text(
                                 "Aa Bb Cc 123",
                                 style: TextStyle(
-                                  fontSize: 16 * clampedSize,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: AppTextStyles.fontSize16 * clampedSize,
+                                  fontWeight: AppTextStyles.weightMedium,
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: AppDimensions.spacing4),
                               Text(
                                 lang.sampleText ?? "Đây là văn bản mẫu",
                                 style: TextStyle(
-                                  fontSize: 14 * clampedSize,
-                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                  fontSize: AppTextStyles.fontSize14 * clampedSize,
+                                  color: AppTheme.getSecondaryTextColor(isDark),
                                 ),
                               ),
                             ],
                           ),
                         ),
 
-                        SizedBox(height: 10),
+                        const SizedBox(height: AppDimensions.spacing10),
 
                         // Hint
                         Text(
                           lang.fontSizeHint ?? "Kéo thanh trượt để thay đổi cỡ chữ",
                           style: TextStyle(
                             fontStyle: FontStyle.italic,
-                            color: isDark ? Colors.grey[500] : Colors.grey[600],
-                            fontSize: 12,
+                            color: AppTheme.getSecondaryTextColor(isDark),
+                            fontSize: AppTextStyles.fontSize12,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -351,14 +346,14 @@ class SettingsScreen extends StatelessWidget {
                         // Max warning
                         if ((clampedSize * 10).round() == 12)
                           Padding(
-                            padding: EdgeInsets.only(top: 10),
+                            padding: const EdgeInsets.only(top: AppDimensions.spacing10),
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: AppDimensions.paddingH12V8,
                               decoration: BoxDecoration(
-                                color: Colors.orange.withOpacity(isDark ? 0.2 : 0.1),
-                                borderRadius: BorderRadius.circular(8),
+                                color: AppColors.orange.withOpacity(isDark ? AppColors.opacity20 : AppColors.opacity10),
+                                borderRadius: AppDimensions.borderRadius8,
                                 border: Border.all(
-                                  color: (isDark ? Colors.orange[300]! : Colors.orange).withOpacity(0.5),
+                                  color: (isDark ? AppColors.orange300 : AppColors.orange).withOpacity(AppColors.opacity50),
                                 ),
                               ),
                               child: Row(
@@ -366,15 +361,15 @@ class SettingsScreen extends StatelessWidget {
                                 children: [
                                   Icon(
                                     Icons.warning_amber_rounded,
-                                    size: 16,
-                                    color: isDark ? Colors.orange[300] : Colors.orange[700],
+                                    size: AppDimensions.iconSizeMedium,
+                                    color: isDark ? AppColors.orange300 : AppColors.orange700,
                                   ),
-                                  SizedBox(width: 6),
+                                  const SizedBox(width: AppDimensions.spacing6),
                                   Text(
                                     lang.maxLimitReached ?? "Đã đạt giới hạn tối đa",
                                     style: TextStyle(
-                                      fontSize: 12,
-                                      color: isDark ? Colors.orange[300] : Colors.orange[700],
+                                      fontSize: AppTextStyles.fontSize12,
+                                      color: isDark ? AppColors.orange300 : AppColors.orange700,
                                     ),
                                   ),
                                 ],
@@ -388,11 +383,11 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
 
-            SizedBox(height: 30),
+            const SizedBox(height: AppDimensions.spacing30),
 
             // --- SECTION: Ngôn ngữ ---
             _buildSectionTitle(lang.languageRegion ?? "Ngôn ngữ & Khu vực", theme),
-            SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacing12),
 
             // --- 3. NGÔN NGỮ ---
             BlocBuilder<LanguageCubit, Locale>(
@@ -414,10 +409,10 @@ class SettingsScreen extends StatelessWidget {
                         onTap: () => context.read<LanguageCubit>().toVietnamese(),
                       ),
                       Divider(
-                        height: 1,
+                        height: AppDimensions.borderWidth1,
                         indent: 60,
-                        endIndent: 16,
-                        color: isDark ? Colors.grey[800] : Colors.grey[300],
+                        endIndent: AppDimensions.spacing16,
+                        color: AppTheme.getBorderColor(isDark),
                       ),
                       _buildLanguageTile(
                         context: context,
@@ -436,7 +431,7 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
 
-            SizedBox(height: 30),
+            const SizedBox(height: AppDimensions.spacing30),
           ],
         ),
       ),
@@ -451,19 +446,19 @@ class SettingsScreen extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 4,
-          height: 20,
+          width: AppDimensions.spacing4,
+          height: AppDimensions.spacing20,
           decoration: BoxDecoration(
             color: theme.primaryColor,
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: AppDimensions.borderRadius2,
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: AppDimensions.spacing10),
         Text(
           title,
           style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontSize: AppTextStyles.fontSize18,
+            fontWeight: AppTextStyles.weightBold,
             color: theme.textTheme.bodyLarge?.color,
           ),
         ),
@@ -479,15 +474,15 @@ class SettingsScreen extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: AppDimensions.borderRadius15,
         border: isDark
-            ? Border.all(color: Colors.grey[800]!, width: 1)
+            ? Border.all(color: AppColors.grey800, width: AppDimensions.borderWidth1)
             : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
+            color: AppColors.black.withOpacity(isDark ? AppColors.opacity30 : AppColors.opacity05),
+            blurRadius: AppDimensions.blurRadius10,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -510,58 +505,58 @@ class SettingsScreen extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: AppDimensions.borderRadius12,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: AppDimensions.paddingH16V14,
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: AppDimensions.avatarSizeSmall,
+              height: AppDimensions.avatarSizeSmall,
               decoration: BoxDecoration(
-                color: isDark ? Colors.grey[800] : Colors.grey[100],
-                borderRadius: BorderRadius.circular(10),
+                color: isDark ? AppColors.grey800 : AppColors.grey100,
+                borderRadius: AppDimensions.borderRadius10,
               ),
               child: Center(
-                child: Text(flag, style: TextStyle(fontSize: 22)),
+                child: Text(flag, style: const TextStyle(fontSize: AppTextStyles.fontSize22)),
               ),
             ),
-            SizedBox(width: 14),
+            const SizedBox(width: AppDimensions.spacing14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                    style: AppTextStyles.subtitleBold,
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      fontSize: AppTextStyles.fontSize12,
+                      color: AppTheme.getSecondaryTextColor(isDark),
                     ),
                   ),
                 ],
               ),
             ),
             AnimatedContainer(
-              duration: Duration(milliseconds: 200),
-              width: 24,
-              height: 24,
+              duration: const Duration(milliseconds: 200),
+              width: AppDimensions.iconSizeRegular,
+              height: AppDimensions.iconSizeRegular,
               decoration: BoxDecoration(
-                color: isSelected ? theme.primaryColor : Colors.transparent,
+                color: isSelected ? theme.primaryColor : AppColors.white.withOpacity(0),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isSelected
                       ? theme.primaryColor
-                      : (isDark ? Colors.grey[600]! : Colors.grey[400]!),
-                  width: 2,
+                      : (isDark ? AppColors.grey600 : AppColors.grey400),
+                  width: AppDimensions.borderWidth2,
                 ),
               ),
               child: isSelected
-                  ? Icon(Icons.check, size: 14, color: Colors.white)
+                  ? const Icon(Icons.check, size: AppDimensions.iconSizeSmall, color: AppColors.white)
                   : null,
             ),
           ],
