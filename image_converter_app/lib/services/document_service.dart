@@ -3,11 +3,15 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/api_config.dart';
+import 'network_service.dart';
 
 class DocumentService {
   // ✅ Sử dụng ApiConfig thay vì hardcode IP
   final String baseUrl = ApiConfig.apiUrl;
   final _storage = const FlutterSecureStorage();
+  
+  // ✅ Network Service để kiểm tra kết nối mạng
+  final NetworkService _networkService = NetworkService.getInstance();
   // ==================== CONVERT API ====================
 
   /// Upload ảnh và convert sang PDF
@@ -21,6 +25,9 @@ class DocumentService {
         String? outputName,
       }) async {
     try {
+      // ✅ Kiểm tra mạng trước khi gọi API
+      await _networkService.ensureConnectivity();
+      
       String? token = await _storage.read(key: 'auth_token');
       if (token == null) return null;
 
@@ -66,6 +73,9 @@ class DocumentService {
   /// Backend: GET /api/quality-presets
   Future<Map<String, dynamic>> getQualityPresets() async {
     try {
+      // ✅ Kiểm tra mạng trước khi gọi API
+      await _networkService.ensureConnectivity();
+      
       String? token = await _storage.read(key: 'auth_token');
       
       // ✅ CRITICAL FIX: Check null token trước khi gọi API
@@ -146,6 +156,9 @@ class DocumentService {
   /// Backend: GET /api/ (index method)
   Future<List<dynamic>> getHistory() async {
     try {
+      // ✅ Kiểm tra mạng trước khi gọi API
+      await _networkService.ensureConnectivity();
+      
       String? token = await _storage.read(key: 'auth_token');
       
       // ✅ CRITICAL FIX: Check null token trước khi gọi API
@@ -189,6 +202,9 @@ class DocumentService {
   /// Backend: DELETE /api/{id}
   Future<void> deleteDocument(int id) async {
     try {
+      // ✅ Kiểm tra mạng trước khi gọi API
+      await _networkService.ensureConnectivity();
+      
       String? token = await _storage.read(key: 'auth_token');
 
       if (token == null) {
@@ -224,6 +240,9 @@ class DocumentService {
   /// Backend: PUT /api/{id}
   Future<void> renameDocument(int id, String newName) async {
     try {
+      // ✅ Kiểm tra mạng trước khi gọi API
+      await _networkService.ensureConnectivity();
+      
       String? token = await _storage.read(key: 'auth_token');
 
       // Backend route: PUT /api/{id} (không phải /api/documents/{id})
@@ -259,6 +278,9 @@ class DocumentService {
         String? outputName,
       }) async {
     try {
+      // ✅ Kiểm tra mạng trước khi gọi API
+      await _networkService.ensureConnectivity();
+      
       String? token = await _storage.read(key: 'auth_token');
 
       if (token == null) {
@@ -344,6 +366,9 @@ class DocumentService {
   /// Backend: GET /api/get_user
   Future<Map<String, dynamic>> getUserInfo() async {
     try {
+      // ✅ Kiểm tra mạng trước khi gọi API
+      await _networkService.ensureConnectivity();
+      
       String? token = await _storage.read(key: 'auth_token');
 
       if (token == null) {

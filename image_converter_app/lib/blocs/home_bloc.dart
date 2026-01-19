@@ -108,7 +108,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           // Invalidate cache vì có document mới
           final cacheService = await CacheService.getInstance();
           await cacheService.invalidateDocumentsCache();
-          
+
           emit(HomeSuccess("Chuyển đổi thành công ${event.editedFiles.length} ảnh!"));
           add(LoadHistoryRequested(forceRefresh: true));
         }
@@ -124,11 +124,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(HomeLoading());
       try {
         await _documentService.mergePdfs(event.ids);
-        
+
         // Invalidate cache vì có document mới
         final cacheService = await CacheService.getInstance();
         await cacheService.invalidateDocumentsCache();
-        
+
         emit(HomeSuccess("Ghép file PDF thành công!"));
         add(LoadHistoryRequested(forceRefresh: true));
       } catch (e) {
@@ -142,7 +142,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<LoadHistoryRequested>((event, emit) async {
       try {
         final cacheService = await CacheService.getInstance();
-        
+
         // BƯỚC 1: Nếu không force refresh, thử load từ cache trước
         if (!event.forceRefresh) {
           final cachedDocs = await cacheService.getCachedDocuments();
@@ -155,7 +155,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               cacheTime: cacheTime,
             ));
             print('⚡ Hiển thị ${cachedDocs.length} docs từ cache');
-            
+
             // Nếu cache vẫn còn valid, không cần call API
             if (cacheService.isDocumentsCacheValid()) {
               print('✅ Cache còn valid, bỏ qua API call');
@@ -168,17 +168,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           // Force refresh -> show loading
           emit(HomeLoading());
         }
-        
+
         // BƯỚC 2: Load từ API
         final docs = await _documentService.getHistory();
-        
+
         // BƯỚC 3: Cache data mới
         await cacheService.cacheDocuments(docs);
-        
+
         // BƯỚC 4: Emit data từ API
         emit(HistoryLoaded(docs, isFromCache: false));
         print('🌐 Đã load ${docs.length} docs từ API và cache');
-        
+
       } catch (e) {
         // Nếu API fail, thử fallback về cache (kể cả đã hết hạn)
         try {
@@ -195,7 +195,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             return;
           }
         } catch (_) {}
-        
+
         // Không có cache -> emit error
         emit(HomeFailure(e.toString()));
       }
@@ -205,11 +205,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<DeleteDocumentRequested>((event, emit) async {
       try {
         await _documentService.deleteDocument(event.id);
-        
+
         // Invalidate cache vì document bị xóa
         final cacheService = await CacheService.getInstance();
         await cacheService.invalidateDocumentsCache();
-        
+
         add(LoadHistoryRequested(forceRefresh: true));
       } catch (e) {
         emit(HomeFailure("Không xóa được: ${e.toString()}"));
@@ -222,11 +222,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<RenameDocumentRequested>((event, emit) async {
       try {
         await _documentService.renameDocument(event.id, event.newName);
-        
+
         // Invalidate cache vì document bị đổi tên
         final cacheService = await CacheService.getInstance();
         await cacheService.invalidateDocumentsCache();
-        
+
         add(LoadHistoryRequested(forceRefresh: true));
         emit(HomeSuccess("Đổi tên thành công!"));
       } catch (e) {

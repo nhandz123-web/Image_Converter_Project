@@ -60,6 +60,7 @@ dependencies:
   photo_view: ^0.15.0
   cached_network_image: ^3.3.1  # Lazy loading & caching images
   path: ^1.9.0                  # Xử lý đường dẫn file
+  connectivity_plus: ^6.1.4     # Kiểm tra kết nối mạng
 
 dev_dependencies:
   flutter_test:

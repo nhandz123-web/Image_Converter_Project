@@ -113,20 +113,20 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
       // Tạo thư mục riêng cho app thay vì lưu vào Downloads công khai
       const String appFolderName = 'SnapPDF_Files';
       Directory appDir;
-      
+
       if (Platform.isAndroid) {
         // Lưu vào thư mục Documents của app (an toàn hơn)
         appDir = await getApplicationDocumentsDirectory();
       } else {
         appDir = await getApplicationDocumentsDirectory();
       }
-      
+
       // Tạo thư mục con cho app
       final appFilesDir = Directory('${appDir.path}/$appFolderName');
       if (!await appFilesDir.exists()) {
         await appFilesDir.create(recursive: true);
       }
-      
+
       String savePath = '${appFilesDir.path}/$fileName';
 
       // Xử lý trùng tên file (tự động thêm số đếm)
@@ -147,8 +147,8 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
 
       // ✅ MỚI: Lưu file vào LocalFileService để hiển thị trong tab "File đã tải"
       final localFileService = LocalFileService();
-      final fileType = fileName.contains('.') 
-          ? fileName.split('.').last.toLowerCase() 
+      final fileType = fileName.contains('.')
+          ? fileName.split('.').last.toLowerCase()
           : 'unknown';
       final savedFile = await localFileService.addExistingFile(
         filePath: finalPath,
@@ -156,7 +156,7 @@ class _FileDetailScreenState extends State<FileDetailScreen> with SingleTickerPr
         fileType: fileType,
         originalName: widget.document['name']?.toString(),
       );
-      
+
       if (savedFile != null) {
         print("✅ File đã được lưu vào danh sách Downloaded Files: ${savedFile.name}");
       }

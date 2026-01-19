@@ -21,10 +21,33 @@ class DownloadedFilesScreen extends StatefulWidget {
 }
 
 class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     context.read<DownloadedFilesBloc>().add(LoadDownloadedFilesRequested());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// Kiểm tra nếu scroll gần cuối thì load thêm
+  bool _onScrollNotification(ScrollNotification scrollInfo) {
+    if (scrollInfo is ScrollEndNotification) {
+      final metrics = scrollInfo.metrics;
+      // Khi scroll còn cách cuối 200px thì load thêm
+      if (metrics.pixels >= metrics.maxScrollExtent - 200) {
+        final state = context.read<DownloadedFilesBloc>().state;
+        if (state is DownloadedFilesLoaded && state.hasMore && !state.isLoadingMore) {
+          context.read<DownloadedFilesBloc>().add(LoadMoreFilesRequested());
+        }
+      }
+    }
+    return false;
   }
 
   @override
@@ -51,12 +74,26 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
               },
               color: AppColors.primary,
               backgroundColor: isDark ? AppColors.cardDark : AppColors.white,
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  _buildAppBar(isDark, state, lang),
-                  _buildBody(state, theme, isDark, lang),
-                ],
+              child: NotificationListener<ScrollNotification>(
+                onNotification: _onScrollNotification,
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    _buildAppBar(isDark, state, lang),
+                    _buildBody(state, theme, isDark, lang),
+                    // Loading indicator khi đang load thêm
+                    if (state is DownloadedFilesLoaded && state.isLoadingMore)
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -143,7 +180,7 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
                       ),
                       if (!isSelectMode && state is DownloadedFilesLoaded)
                         Text(
-                          lang.totalSize(state.totalSize),
+                          '${state.files.length}/${state.totalCount} files • ${state.totalSize}',
                           style: TextStyle(
                             color: AppColors.white.withOpacity(0.8),
                             fontSize: AppTextStyles.fontSize12,

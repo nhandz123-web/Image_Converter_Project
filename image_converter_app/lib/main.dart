@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import thư viện lưu trữ
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_converter_app/l10n/app_localizations.dart';
 import 'dart:async';
 import 'services/auth_service.dart';
@@ -10,9 +10,9 @@ import 'blocs/language_cubit.dart';
 import 'blocs/font_size_cubit.dart';
 import 'blocs/theme_cubit.dart';
 import 'screens/login_screen.dart';
-import 'screens/main_screen.dart'; // ✅ Màn hình chính với Bottom Navigation
+import 'screens/main_screen.dart';
 import 'blocs/home_bloc.dart';
-import 'theme/app_theme.dart'; // Import theme mới
+import 'theme/app_theme.dart';
 
 /// Global BlocObserver để log và handle errors từ tất cả Blocs
 class AppBlocObserver extends BlocObserver {
@@ -39,14 +39,14 @@ class AppBlocObserver extends BlocObserver {
 void main() async {
   // 1. Đảm bảo Flutter binding đã sẵn sàng để gọi code bất đồng bộ
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // 2. Setup Global Error Handler
   FlutterError.onError = (FlutterErrorDetails details) {
     print('❌ [FlutterError] ${details.exceptionAsString()}');
     print('📍 ${details.stack}');
     // Không crash app, chỉ log lỗi
   };
-  
+
   // 3. Setup BlocObserver để monitor tất cả Blocs
   Bloc.observer = AppBlocObserver();
 

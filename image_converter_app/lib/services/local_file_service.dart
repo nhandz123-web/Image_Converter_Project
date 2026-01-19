@@ -50,7 +50,6 @@ class LocalFile {
 
   /// Kiểm tra file có tồn tại trên thiết bị không
   bool get exists => File(path).existsSync();
-
   /// Format kích thước file
   String get formattedSize {
     if (size < 1024) return '$size B';
@@ -69,37 +68,93 @@ class LocalFileService {
   Future<Directory> get _downloadsDirectory async {
     final appDir = await getApplicationDocumentsDirectory();
     final downloadsDir = Directory(p.join(appDir.path, _downloadsFolderName));
-    
+
     if (!await downloadsDir.exists()) {
       await downloadsDir.create(recursive: true);
     }
-    
+
     return downloadsDir;
   }
 
-  /// Lấy danh sách tất cả file đã tải xuống
-  Future<List<LocalFile>> getDownloadedFiles() async {
+  /// Lấy danh sách file đã tải xuống với pagination
+  /// [limit] - số file tối đa trả về (mặc định 20)
+  /// [offset] - vị trí bắt đầu (mặc định 0)
+  Future<List<LocalFile>> getDownloadedFiles({int limit = 20, int offset = 0}) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString(_storageKey);
+      final allFiles = await _getAllFilesInternal();
       
-      if (jsonString == null || jsonString.isEmpty) {
+      // Apply pagination
+      if (offset >= allFiles.length) {
         return [];
       }
 
-      final List<dynamic> jsonList = json.decode(jsonString);
-      final files = jsonList
-          .map((item) => LocalFile.fromJson(item as Map<String, dynamic>))
-          .where((file) => file.exists) // Chỉ trả về file còn tồn tại
-          .toList();
-
-      // Sắp xếp theo thời gian tải xuống mới nhất
-      files.sort((a, b) => b.downloadedAt.compareTo(a.downloadedAt));
-      
-      return files;
+      final endIndex = (offset + limit) > allFiles.length ? allFiles.length : (offset + limit);
+      return allFiles.sublist(offset, endIndex);
     } catch (e) {
       print('❌ [LocalFileService] Error loading files: $e');
       return [];
+    }
+  }
+
+  /// ✅ OPTIMIZED: Lấy files với stats trong một lần đọc duy nhất
+  /// Tránh đọc SharedPreferences và parse JSON nhiều lần
+  Future<({List<LocalFile> files, int totalSize, int totalCount})> getFilesWithStats({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    try {
+      final allFiles = await _getAllFilesInternal();
+      
+      // Tính totalSize từ tất cả files
+      final totalSize = allFiles.fold<int>(0, (sum, file) => sum + file.size);
+      final totalCount = allFiles.length;
+      
+      // Apply pagination
+      List<LocalFile> paginatedFiles;
+      if (offset >= allFiles.length) {
+        paginatedFiles = [];
+      } else {
+        final endIndex = (offset + limit) > allFiles.length ? allFiles.length : (offset + limit);
+        paginatedFiles = allFiles.sublist(offset, endIndex);
+      }
+
+      return (files: paginatedFiles, totalSize: totalSize, totalCount: totalCount);
+    } catch (e) {
+      print('❌ [LocalFileService] Error loading files with stats: $e');
+      return (files: <LocalFile>[], totalSize: 0, totalCount: 0);
+    }
+  }
+
+  /// ✅ INTERNAL: Đọc và parse tất cả files một lần
+  /// Được cache trong một request để tránh đọc lại
+  Future<List<LocalFile>> _getAllFilesInternal() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(_storageKey);
+
+    if (jsonString == null || jsonString.isEmpty) {
+      return [];
+    }
+
+    final List<dynamic> jsonList = json.decode(jsonString);
+    final allFiles = jsonList
+        .map((item) => LocalFile.fromJson(item as Map<String, dynamic>))
+        .where((file) => file.exists) // Chỉ trả về file còn tồn tại
+        .toList();
+
+    // Sắp xếp theo thời gian tải xuống mới nhất
+    allFiles.sort((a, b) => b.downloadedAt.compareTo(a.downloadedAt));
+
+    return allFiles;
+  }
+
+  /// Lấy tổng số file đã tải xuống (để tính hasMore)
+  Future<int> getTotalFileCount() async {
+    try {
+      final allFiles = await _getAllFilesInternal();
+      return allFiles.length;
+    } catch (e) {
+      print('❌ [LocalFileService] Error getting file count: $e');
+      return 0;
     }
   }
 
@@ -196,7 +251,7 @@ class LocalFileService {
 
       // Xóa khỏi storage
       await _removeFileFromStorage(fileId);
-      
+
       return true;
     } catch (e) {
       print('❌ [LocalFileService] Error deleting file: $e');
@@ -233,7 +288,7 @@ class LocalFileService {
   Future<void> clearAll() async {
     try {
       final files = await getDownloadedFiles();
-      
+
       // Xóa từng file
       for (final localFile in files) {
         final file = File(localFile.path);
@@ -255,10 +310,10 @@ class LocalFileService {
   Future<void> _addFileToStorage(LocalFile file) async {
     final prefs = await SharedPreferences.getInstance();
     final files = await getDownloadedFiles();
-    
+
     // Thêm file mới vào đầu danh sách
     files.insert(0, file);
-    
+
     final jsonString = json.encode(files.map((f) => f.toJson()).toList());
     await prefs.setString(_storageKey, jsonString);
   }
@@ -266,9 +321,9 @@ class LocalFileService {
   Future<void> _removeFileFromStorage(String fileId) async {
     final prefs = await SharedPreferences.getInstance();
     final files = await getDownloadedFiles();
-    
+
     files.removeWhere((f) => f.id == fileId);
-    
+
     final jsonString = json.encode(files.map((f) => f.toJson()).toList());
     await prefs.setString(_storageKey, jsonString);
   }

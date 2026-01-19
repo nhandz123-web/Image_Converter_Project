@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'cache_service.dart';
 import '../config/api_config.dart';
+import 'network_service.dart';
 
 class AuthService {
   // ✅ Sử dụng ApiConfig thay vì hardcode IP
@@ -14,12 +15,21 @@ class AuthService {
   ));
 
   final _storage = const FlutterSecureStorage();
+  
+  // ✅ Network Service để kiểm tra kết nối mạng
+  final NetworkService _networkService = NetworkService.getInstance();
 
   // ==========================================
   // 🔐 ĐĂNG NHẬP (LOGIN)
   // ==========================================
   Future<String?> login(String email, String password) async {
     try {
+      // ✅ Kiểm tra mạng trước khi gọi API
+      final hasNetwork = await _networkService.checkConnectivity();
+      if (!hasNetwork) {
+        return 'Không có kết nối mạng. Vui lòng kiểm tra internet của bạn.';
+      }
+      
       print("🚀 Đang gọi API Login: $baseUrl/login");
 
       final response = await _dio.post('$baseUrl/login', data: {
@@ -59,6 +69,12 @@ class AuthService {
     required String birthday, // Định dạng chuỗi 'YYYY-MM-DD'
   }) async {
     try {
+      // ✅ Kiểm tra mạng trước khi gọi API
+      final hasNetwork = await _networkService.checkConnectivity();
+      if (!hasNetwork) {
+        return 'Không có kết nối mạng. Vui lòng kiểm tra internet của bạn.';
+      }
+      
       print("🚀 Đang gọi API Register...");
 
       // 🔥 QUAN TRỌNG: Key ở đây phải KHỚP 100% với hàm validator trong Laravel

@@ -40,7 +40,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<HomeBloc>().add(LoadHistoryRequested());
+    // ✅ REMOVED: Không cần load ở đây vì HomeBloc đã tự load trong main.dart
+    // context.read<HomeBloc>().add(LoadHistoryRequested());
   }
 
   // ════════════════════════════════════════════════════════════════

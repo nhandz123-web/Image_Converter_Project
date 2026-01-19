@@ -9,6 +9,7 @@ import '../blocs/downloaded_files_bloc.dart';
 
 import 'home/home_screen.dart';
 import 'downloaded_files/downloaded_files_screen.dart';
+import '../widgets/network_status_widget.dart';
 
 /// Màn hình chính chứa Bottom Navigation Bar
 /// Quản lý navigation giữa Home và Downloaded Files
@@ -26,8 +27,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   DateTime? _lastBackPressed;
   static const Duration _exitTimeWindow = Duration(seconds: 2);
 
-  // Page controller for smooth transitions
-  late final PageController _pageController;
+  // ✅ LAZY LOADING: Track xem user đã vào tab Files chưa
+  bool _hasVisitedFilesTab = false;
   
   // Animation controller for nav bar
   late final AnimationController _animationController;
@@ -35,7 +36,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _currentIndex);
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -45,7 +45,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _pageController.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -55,13 +54,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     
     setState(() {
       _currentIndex = index;
+      // ✅ Đánh dấu đã visit tab Files khi user click lần đầu
+      if (index == 1 && !_hasVisitedFilesTab) {
+        _hasVisitedFilesTab = true;
+      }
     });
-    
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
   }
 
   @override
@@ -90,16 +87,24 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         }
       },
       child: Scaffold(
-        body: PageView(
-          controller: _pageController,
-          physics: const NeverScrollableScrollPhysics(), // Disable swipe
-          children: [
-            const HomeScreen(),
-            BlocProvider(
-              create: (context) => DownloadedFilesBloc(),
-              child: const DownloadedFilesScreen(),
-            ),
-          ],
+        // ✅ LAZY LOADING: Sử dụng IndexedStack thay vì PageView
+        // IndexedStack giữ state của children và chỉ hiển thị child hiện tại
+        body: NetworkStatusBanner(
+          child: IndexedStack(
+            index: _currentIndex,
+            children: [
+              const HomeScreen(),
+              // ✅ LAZY LOADING: Chỉ tạo DownloadedFilesScreen khi user đã click tab
+              if (_hasVisitedFilesTab)
+                BlocProvider(
+                  create: (context) => DownloadedFilesBloc(),
+                  child: const DownloadedFilesScreen(),
+                )
+              else
+                // Placeholder widget nhẹ khi chưa visit
+                const SizedBox.shrink(),
+            ],
+          ),
         ),
         bottomNavigationBar: _buildBottomNavBar(isDark),
       ),
