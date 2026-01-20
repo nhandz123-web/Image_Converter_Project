@@ -8,7 +8,7 @@ import '../../../theme/app_text_styles.dart';
 typedef OnToolSelected = void Function(String toolId);
 
 /// Widget hiển thị grid các công cụ chuyển đổi
-/// Đã được cải thiện với thiết kế đẹp hơn cho Light Mode
+/// Đã được cải thiện với thiết kế đẹp hơn cho Light Mode và tránh overflow
 class ToolGrid extends StatelessWidget {
   final ThemeData theme;
   final OnToolSelected onToolSelected;
@@ -23,7 +23,7 @@ class ToolGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final lang = AppLocalizations.of(context)!;
     final isDark = theme.brightness == Brightness.dark;
-    
+
     // Sử dụng màu soft hơn cho Light Mode
     final List<Map<String, dynamic>> tools = [
       {
@@ -87,7 +87,7 @@ class ToolGrid extends StatelessWidget {
   Widget _buildToolCard(Map<String, dynamic> tool, bool isDark) {
     final Color mainColor = tool['color'] as Color;
     final List<Color> gradientColors = tool['gradient'] as List<Color>;
-    
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -103,7 +103,7 @@ class ToolGrid extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: isDark 
+                color: isDark
                     ? Colors.black.withOpacity(0.3)
                     : mainColor.withOpacity(0.15),
                 blurRadius: isDark ? 8 : 16,
@@ -117,60 +117,71 @@ class ToolGrid extends StatelessWidget {
               ),
             ],
           ),
-          child: Container(
+          child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Icon container với gradient
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    gradient: isDark ? null : LinearGradient(
-                      colors: [
-                        gradientColors[0].withOpacity(0.15),
-                        gradientColors[1].withOpacity(0.08),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                // Icon container với gradient - Flexible để tránh overflow
+                Flexible(
+                  flex: 3,
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: isDark ? null : LinearGradient(
+                        colors: [
+                          gradientColors[0].withOpacity(0.15),
+                          gradientColors[1].withOpacity(0.08),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      color: isDark ? mainColor.withOpacity(0.15) : null,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: mainColor.withOpacity(isDark ? 0.2 : 0.2),
+                        width: 1.5,
+                      ),
                     ),
-                    color: isDark ? mainColor.withOpacity(0.15) : null,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: mainColor.withOpacity(isDark ? 0.2 : 0.2),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: ShaderMask(
-                    shaderCallback: (bounds) => LinearGradient(
-                      colors: isDark 
-                          ? [mainColor, mainColor]
-                          : gradientColors,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ).createShader(bounds),
-                    child: Icon(
-                      tool['icon'],
-                      size: 28,
-                      color: Colors.white,
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: ShaderMask(
+                        shaderCallback: (bounds) => LinearGradient(
+                          colors: isDark
+                              ? [mainColor, mainColor]
+                              : gradientColors,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ).createShader(bounds),
+                        child: Icon(
+                          tool['icon'],
+                          size: 28,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                
-                // Text với style cải thiện
-                Text(
-                  tool['name'],
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isDark 
-                        ? Colors.white.withOpacity(0.9) 
-                        : Colors.grey[800],
-                    letterSpacing: -0.2,
+
+                const SizedBox(height: 8),
+
+                // Text với Flexible để tránh overflow
+                Flexible(
+                  flex: 2,
+                  child: Text(
+                    tool['name'],
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? Colors.white.withOpacity(0.9)
+                          : Colors.grey[800],
+                      letterSpacing: -0.2,
+                      height: 1.2,
+                    ),
                   ),
                 ),
               ],

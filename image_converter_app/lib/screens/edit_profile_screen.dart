@@ -6,6 +6,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_dimensions.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_header.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final String currentName;
@@ -96,25 +97,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(isDark),
-      // --- AppBar với Gradient ---
-      appBar: AppBar(
-        elevation: AppDimensions.elevation0,
-        centerTitle: true,
-        title: Text(
-          lang.editProfile ?? "Chỉnh sửa hồ sơ",
-          style: const TextStyle(
-            fontWeight: AppTextStyles.weightBold,
-            color: AppColors.white,
-          ),
-        ),
-        flexibleSpace: Container(
+      // --- AppBar sử dụng style thống nhất ---
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80),
+        child: Container(
           decoration: BoxDecoration(
             gradient: AppTheme.getPrimaryGradient(isDark),
           ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.white),
-          onPressed: () => Navigator.pop(context),
+          child: SafeArea(
+            child: Padding(
+              padding: AppDimensions.paddingH16,
+              child: Row(
+                children: [
+                  // Back button
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  // Title
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        lang.editProfile ?? "Chỉnh sửa hồ sơ",
+                        style: const TextStyle(
+                          fontWeight: AppTextStyles.weightBold,
+                          color: AppColors.white,
+                          fontSize: AppTextStyles.fontSize20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Placeholder để cân bằng layout
+                  const SizedBox(width: 48),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
       body: SingleChildScrollView(

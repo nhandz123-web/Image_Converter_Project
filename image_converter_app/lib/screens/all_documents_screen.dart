@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_dimensions.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_header.dart';
 
 class AllDocumentsScreen extends StatefulWidget {
   @override
@@ -34,13 +35,13 @@ class _AllDocumentsScreenState extends State<AllDocumentsScreen> {
       backgroundColor: AppTheme.getBackgroundColor(isDark),
       body: CustomScrollView(
         slivers: [
-          // App Bar với gradient
+          // App Bar với gradient - style thống nhất
           SliverAppBar(
             floating: false,
             pinned: true,
             elevation: AppDimensions.elevation0,
             backgroundColor: theme.primaryColor,
-            toolbarHeight: AppDimensions.appBarHeight,
+            toolbarHeight: 80,
             automaticallyImplyLeading: false,
             flexibleSpace: Container(
               decoration: BoxDecoration(
@@ -48,25 +49,30 @@ class _AllDocumentsScreenState extends State<AllDocumentsScreen> {
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: AppDimensions.paddingH8,
+                  padding: AppDimensions.paddingH16,
                   child: Row(
                     children: [
+                      // Back button
                       IconButton(
                         icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.white),
                         onPressed: () => Navigator.pop(context),
                       ),
+                      // Title or search field
                       if (!_isSearching)
                         Expanded(
-                          child: Text(
-                            lang.allDocuments ?? "Tất cả tài liệu",
-                            style: const TextStyle(
-                              color: AppColors.white,
-                              fontWeight: AppTextStyles.weightBold,
-                              fontSize: AppTextStyles.fontSize22,
+                          child: Center(
+                            child: Text(
+                              lang.allDocuments ?? "Tất cả tài liệu",
+                              style: const TextStyle(
+                                color: AppColors.white,
+                                fontWeight: AppTextStyles.weightBold,
+                                fontSize: AppTextStyles.fontSize20,
+                              ),
                             ),
                           ),
                         ),
                       if (_isSearching) const Spacer(),
+                      // Search button
                       IconButton(
                         icon: Icon(
                           _isSearching ? Icons.close_rounded : Icons.search_rounded,

@@ -145,4 +145,48 @@ class AppColors {
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
+  
+  // ══════════════════════════════════════════════════════════════════
+  //                         VIP CROWN COLORS
+  // ══════════════════════════════════════════════════════════════════
+  
+  // Crown màu vàng cho user chưa VIP (hấp dẫn để upgrade)
+  static const Color crownGold = Color(0xFFFFD700);
+  static const Color crownGoldDark = Color(0xFFDAA520);
+  static const Color crownGoldLight = Color(0xFFFFE55C);
+  
+  // Crown màu vàng đậm cho VIP user (cao cấp, nổi bật)
+  static const Color crownVipGold = Color(0xFFFFD700);       // Vàng chính
+  static const Color crownVipGoldDark = Color(0xFFB8860B);   // Vàng đậm (DarkGoldenrod)
+  static const Color crownVipGoldShine = Color(0xFFFFF8DC);  // Vàng kem sáng (Cornsilk)
+  static const Color crownVipBorder = Color(0xFFFFD700);     // Viền vàng
+  
+  // Legacy platinum colors (giữ lại để tương thích)
+  static const Color crownPlatinum = Color(0xFFF5F5F5);
+  static const Color crownPlatinumShine = Color(0xFFFFFFFF);
+  
+  // VIP badge background
+  static const Color vipBadgeBackground = Color(0xFF1A1A2E);
+  static const Color vipBadgeBackgroundLight = Color(0xFFFFF8E1);
+  
+  // Gradient cho crown chưa VIP (shimmer effect - vàng nhạt hơn)
+  static const LinearGradient crownGoldGradient = LinearGradient(
+    colors: [Color(0xFFFFE55C), Color(0xFFFFD700), Color(0xFFDAA520)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  // Gradient cho crown VIP (vàng đậm, nổi bật hơn)
+  static const LinearGradient crownVipGradient = LinearGradient(
+    colors: [Color(0xFFFFF8DC), Color(0xFFFFD700), Color(0xFFDAA520)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+  
+  // Gradient cho crown VIP - Dark mode (sáng hơn)
+  static const LinearGradient crownVipGradientDark = LinearGradient(
+    colors: [Color(0xFFFFFFFF), Color(0xFFFFD700), Color(0xFFFFE55C)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
 }

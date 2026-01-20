@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_converter_app/l10n/app_localizations.dart';
-import '../../blocs/auth_bloc.dart';
 import '../../blocs/home_bloc.dart';
-import '../login_screen.dart';
 import '../all_documents_screen.dart';
-import '../profile_screen.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import '../edit_image/edit_image_screen.dart'; // ✅ Import từ thư mục mới
+import '../edit_image/edit_image_screen.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
-import '../../theme/app_text_styles.dart';
-import '../../theme/app_theme.dart';
 
 // ✅ Import các widget đã tách
 import 'widgets/widgets.dart';
+import '../../widgets/app_header.dart';
+import '../../widgets/vip_crown_icon.dart';
 
 /// Màn hình Home chính của ứng dụng
 ///
@@ -75,7 +72,30 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
-                      _buildAppBar(isDark, lang),
+                      AppHeader(
+                        title: lang.appName,
+                        isVip: true, // TODO: Lấy từ AuthBloc/User state
+                        vipInfo: const VipInfo(
+                          planName: 'Premium',
+                          expiryDate: '25/02/2026',
+                          daysRemaining: 37,
+                          benefits: [
+                            'Chuyển đổi không giới hạn',
+                            'Không quảng cáo',
+                            'Dung lượng lưu trữ 50GB',
+                            'Hỗ trợ ưu tiên 24/7',
+                            'Tính năng nâng cao',
+                          ],
+                        ),
+                        onUpgradePressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Tính năng mua VIP đang phát triển'),
+                              backgroundColor: AppColors.info,
+                            ),
+                          );
+                        },
+                      ),
                       _buildBody(state, theme, isDark, lang),
                     ],
                   ),
@@ -89,71 +109,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
-    );
-  }
-
-  // ════════════════════════════════════════════════════════════════
-  //                         APP BAR
-  // ════════════════════════════════════════════════════════════════
-
-  Widget _buildAppBar(bool isDark, AppLocalizations lang) {
-    return SliverAppBar(
-      floating: true,
-      pinned: true,
-      elevation: AppDimensions.elevation0,
-      toolbarHeight: AppDimensions.appBarHeight,
-      automaticallyImplyLeading: false,
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: isDark
-              ? AppColors.appBarGradientDark
-              : AppColors.appBarGradientLight,
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: AppDimensions.paddingH16,
-            child: Row(
-              children: [
-                // Logo
-                Container(
-                  padding: AppDimensions.paddingAll8,
-                  decoration: BoxDecoration(
-                    color: AppColors.white.withOpacity(AppColors.opacity20),
-                    borderRadius: AppDimensions.borderRadius12,
-                  ),
-                  child: const Icon(
-                    Icons.flash_on_rounded,
-                    color: AppColors.white,
-                    size: AppDimensions.iconSizeRegular,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spacing12),
-
-                // Title
-                Expanded(
-                  child: Text(
-                    lang.appName,
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontWeight: AppTextStyles.weightBold,
-                      fontSize: AppTextStyles.fontSize22,
-                    ),
-                  ),
-                ),
-
-                // Profile button
-                IconButton(
-                  icon: const Icon(Icons.person_rounded, color: AppColors.white),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => ProfileScreen()),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 

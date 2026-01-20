@@ -12,6 +12,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_dimensions.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_header.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -65,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (userData != null) {
         name = userData['name'] ?? 'Người dùng';
         email = userData['email'] ?? '';
-        
+
         // Check xem data có từ cache không (AuthService sẽ log ra console)
         // Để đơn giản, ta kiểm tra bằng cách so sánh thời gian load
         // Nếu load quá nhanh (< 100ms), có thể là từ cache
@@ -89,7 +90,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     }
   }
-  
+
   /// Force refresh data từ API
   Future<void> _forceRefresh() async {
     setState(() {
@@ -126,43 +127,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        // --- AppBar với Gradient và Title ---
-        appBar: AppBar(
-          elevation: AppDimensions.elevation0,
-          centerTitle: true,
-          title: Text(
-            lang.myProfile ?? "Hồ sơ của tôi",
-            style: const TextStyle(
-              fontWeight: AppTextStyles.weightBold,
-              color: AppColors.white,
-            ),
-          ),
-          flexibleSpace: Container(
+        // --- AppBar sử dụng AppHeader ---
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(80),
+          child: Container(
             decoration: BoxDecoration(
               gradient: AppTheme.getPrimaryGradient(isDark),
             ),
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
-          actions: [
-            // Nút refresh
-            IconButton(
-              icon: _isLoading 
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.white,
+            child: SafeArea(
+              child: Padding(
+                padding: AppDimensions.paddingH16,
+                child: Row(
+                  children: [
+                    // Back button
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    // Title
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          lang.myProfile ?? "Hồ sơ của tôi",
+                          style: const TextStyle(
+                            fontWeight: AppTextStyles.weightBold,
+                            color: AppColors.white,
+                            fontSize: AppTextStyles.fontSize20,
+                          ),
+                        ),
                       ),
-                    )
-                  : const Icon(Icons.refresh, color: AppColors.white),
-              onPressed: _isLoading ? null : _forceRefresh,
-              tooltip: "Làm mới",
+                    ),
+                    // Refresh button
+                    IconButton(
+                      icon: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.white,
+                              ),
+                            )
+                          : const Icon(Icons.refresh, color: AppColors.white),
+                      onPressed: _isLoading ? null : _forceRefresh,
+                      tooltip: "Làm mới",
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
+          ),
         ),
         body: SingleChildScrollView(
           child: Column(

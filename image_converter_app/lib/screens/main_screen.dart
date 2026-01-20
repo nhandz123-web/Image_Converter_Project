@@ -22,14 +22,14 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   int _currentIndex = 0;
-  
+
   // Double back to exit
   DateTime? _lastBackPressed;
   static const Duration _exitTimeWindow = Duration(seconds: 2);
 
   // ✅ LAZY LOADING: Track xem user đã vào tab Files chưa
   bool _hasVisitedFilesTab = false;
-  
+
   // Animation controller for nav bar
   late final AnimationController _animationController;
 
@@ -51,7 +51,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   void _onTabSelected(int index) {
     if (index == _currentIndex) return;
-    
+
     setState(() {
       _currentIndex = index;
       // ✅ Đánh dấu đã visit tab Files khi user click lần đầu
@@ -75,7 +75,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             _onTabSelected(0);
             return;
           }
-          
+
           final shouldExit = await _onWillPop();
           if (shouldExit && context.mounted) {
             if (Platform.isAndroid) {
@@ -101,7 +101,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   child: const DownloadedFilesScreen(),
                 )
               else
-                // Placeholder widget nhẹ khi chưa visit
+              // Placeholder widget nhẹ khi chưa visit
                 const SizedBox.shrink(),
             ],
           ),
@@ -114,11 +114,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Widget _buildBottomNavBar(bool isDark) {
     // Lấy localization
     final lang = AppLocalizations.of(context)!;
-    
+
     // Màu tím đậm cho active state
     const Color activeColor = Color(0xFF6366F1); // Indigo-500
     final Color inactiveColor = isDark ? AppColors.grey500 : AppColors.grey400;
-    
+
     return Container(
       // Full-width, không bo góc
       decoration: BoxDecoration(
@@ -139,25 +139,29 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // Tab Trang chủ
-              _buildNavItem(
-                index: 0,
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home_rounded,
-                label: lang.navHome ?? 'Trang chủ',
-                activeColor: activeColor,
-                inactiveColor: inactiveColor,
-                isDark: isDark,
+              // Tab Trang chủ - với Flexible
+              Flexible(
+                child: _buildNavItem(
+                  index: 0,
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home_rounded,
+                  label: lang.navHome ?? 'Trang chủ',
+                  activeColor: activeColor,
+                  inactiveColor: inactiveColor,
+                  isDark: isDark,
+                ),
               ),
-              // Tab Tệp tin
-              _buildNavItem(
-                index: 1,
-                icon: Icons.folder_outlined,
-                activeIcon: Icons.folder_rounded,
-                label: lang.navFiles ?? 'Tệp tin',
-                activeColor: activeColor,
-                inactiveColor: inactiveColor,
-                isDark: isDark,
+              // Tab Tệp tin - với Flexible
+              Flexible(
+                child: _buildNavItem(
+                  index: 1,
+                  icon: Icons.folder_outlined,
+                  activeIcon: Icons.folder_rounded,
+                  label: lang.navFiles ?? 'Tệp tin',
+                  activeColor: activeColor,
+                  inactiveColor: inactiveColor,
+                  isDark: isDark,
+                ),
               ),
             ],
           ),
@@ -177,29 +181,40 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }) {
     final isActive = _currentIndex == index;
     final Color currentColor = isActive ? activeColor : inactiveColor;
-    
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => _onTabSelected(index),
-        behavior: HitTestBehavior.opaque,
+
+    return InkWell(
+      onTap: () => _onTabSelected(index),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Icon
-            Icon(
-              isActive ? activeIcon : icon,
-              color: currentColor,
-              size: 26,
+            // Icon - với Flexible để tránh overflow
+            Flexible(
+              flex: 3,
+              child: Icon(
+                isActive ? activeIcon : icon,
+                color: currentColor,
+                size: 26,
+              ),
             ),
             const SizedBox(height: 4),
-            // Label - luôn hiển thị
-            Text(
-              label,
-              style: TextStyle(
-                color: currentColor,
-                fontSize: 12,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            // Label - với Flexible để tránh overflow
+            Flexible(
+              flex: 2,
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: currentColor,
+                  fontSize: 12,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  height: 1.0,
+                ),
               ),
             ),
           ],
@@ -218,7 +233,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
 
     _lastBackPressed = now;
-    
+
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -255,7 +270,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ),
       ),
     );
-
     return false;
   }
 }

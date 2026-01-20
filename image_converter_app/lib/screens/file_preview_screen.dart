@@ -6,6 +6,9 @@ import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:open_filex/open_filex.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_dimensions.dart';
+import '../theme/app_text_styles.dart';
 
 /// Màn hình xem trước file (PDF, ảnh) inline trong app
 /// Hỗ trợ cả URL remote và local file path
@@ -130,37 +133,60 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.grey[900],
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [Colors.grey[900]!, Colors.grey[850]!]
+                  : [Colors.grey[900]!, Colors.grey[800]!],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: AppDimensions.paddingH8,
+              child: Row(
+                children: [
+                  // Close button
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.white, size: 28),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  // Title
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        widget.fileName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: AppTextStyles.fontSize14,
+                          fontWeight: AppTextStyles.weightMedium,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  // Open externally button
+                  IconButton(
+                    icon: const Icon(Icons.open_in_new, color: AppColors.white),
+                    onPressed: _openExternally,
+                    tooltip: "Mở bằng app khác",
+                  ),
+                  // Share button
+                  IconButton(
+                    icon: const Icon(Icons.share, color: AppColors.white),
+                    onPressed: _shareFile,
+                    tooltip: "Chia sẻ",
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-        title: Text(
-          widget.fileName,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        actions: [
-          // Nút mở bằng app ngoài
-          IconButton(
-            icon: const Icon(Icons.open_in_new, color: Colors.white),
-            onPressed: _openExternally,
-            tooltip: "Mở bằng app khác",
-          ),
-          // Nút chia sẻ
-          IconButton(
-            icon: const Icon(Icons.share, color: Colors.white),
-            onPressed: _shareFile,
-            tooltip: "Chia sẻ",
-          ),
-        ],
       ),
       body: _buildBody(),
       // Thanh điều hướng trang cho PDF
