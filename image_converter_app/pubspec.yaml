@@ -62,6 +62,9 @@ dependencies:
   cached_network_image: ^3.3.1  # Lazy loading & caching images
   path: ^1.9.0                  # Xử lý đường dẫn file
   connectivity_plus: ^6.1.4     # Kiểm tra kết nối mạng
+  in_app_purchase: ^3.2.0       # In-App Purchase (Google Play & App Store)
+  in_app_purchase_android: ^0.4.0  # Android platform implementation
+  in_app_purchase_storekit: ^0.4.0 # iOS/macOS platform implementation
 
 dev_dependencies:
   flutter_test:
@@ -119,20 +122,37 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/logo.png" # Đường dẫn đến ảnh bạn vừa copy vào
-  min_sdk_android: 21 # Hỗ trợ Android cũ
+  image_path: "assets/images/logo3.png"
+  # min_sdk_android: 21  <-- ĐÃ XÓA (Thuộc tính này không tồn tại trong config này)
+  # Lưu ý: Nếu muốn icon thích ứng (Adaptive Icon) cho Android 8+, bạn nên có thêm adaptive_icon_background và foreground.
+  # Nếu chỉ dùng ảnh đơn giản thì config trên là đủ.
 
 flutter_native_splash:
-  # color: "#FFFFFF"  <-- Xóa hoặc comment dòng này lại
+  # 1. Cấu hình cho Android cũ (<12) và iOS
+  # --------------------------------------------------------
+  # Xóa dòng background_image đi
+  # background_image: "assets/images/background.png"
 
-  # Dòng mới: Đường dẫn đến ảnh nền Gradient của bạn
-  background_image: "assets/images/background.png"
+  # Thay bằng màu nền (Lấy mã màu bạn đã chọn ở phần Android 12 cũ)
+  color: "#4340AB"
 
-  # Logo vẫn giữ nguyên, nó sẽ nằm đè lên trên nền Gradient
-  image: "assets/images/logo.png"
+  # Logo (Dùng ảnh nền trong suốt)
+  image: "assets/images/logo3.png"
 
-  # Cấu hình cho Android 12+ (Lưu ý: Android 12+ bắt buộc icon phải nằm trong vòng tròn, khó làm full gradient hơn)
+  # Tùy chọn: fullscreen để che thanh trạng thái, nhìn sẽ liền mạch hơn
+  fullscreen: true
+
+
+  # 2. Cấu hình cho Android 12+
+  # --------------------------------------------------------
   android_12:
+    # Màu nền của MÀN HÌNH (Window background)
     color: "#4340AB"
-    background_image: "assets/images/background.png"
-    image: "assets/images/logo.png"
+
+    # Màu nền của VÒNG TRÒN ICON
+    # Mẹo: Để trùng màu với nền màn hình (color ở trên) thì cái vòng tròn
+    # sẽ "tàng hình", tạo cảm giác logo nằm tự do giữa màn hình y hệt Android cũ.
+    icon_background_color: "#4340AB"
+
+    # Logo (Sẽ nằm trong vòng tròn, nhưng do vòng tròn cùng màu nền nên nhìn như liền 1 khối)
+    image: "assets/images/logo3.png"

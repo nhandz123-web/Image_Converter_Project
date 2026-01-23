@@ -84,7 +84,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             // Nếu có gửi password mới lên thì bắt buộc phải gửi kèm current_password
             'password' => 'nullable|string|min:6|confirmed',
-            'current_password' => 'required_with:password' 
+            'current_password' => 'required_with:password'
         ]);
 
         // 2. Cập nhật tên
@@ -108,6 +108,16 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Cập nhật hồ sơ thành công!',
             'user' => $user
+        ]);
+    }
+    // API Đăng xuất
+    public function logout(Request $request)
+    {
+        // Thu hồi token hiện tại
+        $request->user()->token()->revoke();
+
+        return response()->json([
+            'message' => 'Đăng xuất thành công'
         ]);
     }
 }

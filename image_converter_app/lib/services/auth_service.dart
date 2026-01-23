@@ -250,6 +250,11 @@ class AuthService {
           'address': data['address'] ?? '',
           'birthday': data['birthday'],
           'description': data['description'] ?? '',
+          // Thông tin VIP
+          'is_vip': data['is_vip'] ?? false,
+          'plan_name': data['plan_name'] ?? 'Member',
+          'expire_date': data['expire_date'],
+          'storage': data['storage'], // Thông tin dung lượng
         };
       }
 

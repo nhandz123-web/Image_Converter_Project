@@ -5,6 +5,7 @@ import 'package:image_converter_app/l10n/app_localizations.dart';
 import '../services/document_service.dart';
 import '../services/auth_service.dart';
 import '../blocs/auth_bloc.dart';
+import '../config/api_config.dart';
 import 'settings_screen.dart';
 import 'login_screen.dart';
 import 'edit_profile_screen.dart';
@@ -31,6 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   double _percent = 0.0;
   String _name = "Đang tải...";
   String _email = "";
+  String? _photoUrl;
 
   @override
   void initState() {
@@ -47,37 +49,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
     double percent = 0.0;
     String name = 'Người dùng';
     String email = '';
+    String? photoUrl;
     bool isFromCache = false;
 
-    // 1. Gọi API lấy dung lượng (xử lý riêng)
-    try {
-      final storageData = await _documentService.getStorageUsage();
-      usedBytes = storageData['used_bytes'] ?? 0;
-      totalBytes = storageData['total_bytes'] ?? 1073741824;
-      percent = (storageData['percentage'] ?? 0) / 100.0;
-    } catch (e) {
-      print("⚠️ Lỗi lấy storage (sử dụng giá trị mặc định): $e");
-      // Giữ nguyên giá trị mặc định
-    }
-
-    // 2. Gọi API lấy thông tin User (có caching tự động trong AuthService)
+    // Gọi API lấy thông tin User (bao gồm storage)
     try {
       final userData = await _authService.getUser(forceRefresh: forceRefresh);
       if (userData != null) {
         name = userData['name'] ?? 'Người dùng';
         email = userData['email'] ?? '';
-
-        // Check xem data có từ cache không (AuthService sẽ log ra console)
-        // Để đơn giản, ta kiểm tra bằng cách so sánh thời gian load
-        // Nếu load quá nhanh (< 100ms), có thể là từ cache
-        // (Logic này có thể cải thiện thêm)
+        
+        // Parse storage info từ user data
+        if (userData['storage'] != null) {
+          final storage = userData['storage'];
+          // Convert an toàn từ dynamic
+          usedBytes = (storage['used_bytes'] as num?)?.toInt() ?? 0;
+          totalBytes = (storage['max_bytes'] as num?)?.toInt() ?? 1073741824;
+          
+          // Tính phần trăm
+          if (totalBytes > 0) {
+            percent = (usedBytes / totalBytes).clamp(0.0, 1.0);
+          }
+        }
+        
+        // Parse photo
+        String? rawPhoto = userData['photo'];
+        if (rawPhoto != null && rawPhoto.isNotEmpty) {
+           if (rawPhoto.startsWith('http')) {
+              photoUrl = rawPhoto;
+           } else {
+              // Fix relative path
+              photoUrl = '${ApiConfig.baseUrl}/${rawPhoto.replaceAll(RegExp(r'^/+'), '')}';
+           }
+        }
       }
     } catch (e) {
       print("⚠️ Lỗi lấy user info: $e");
-      isFromCache = true; // Nếu lỗi, có thể đang dùng fallback cache
+      isFromCache = true;
     }
 
-    // 3. Cập nhật UI
+    // Cập nhật UI
     if (mounted) {
       setState(() {
         _usedBytes = usedBytes;
@@ -85,6 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _percent = percent;
         _name = name;
         _email = email;
+        _photoUrl = photoUrl;
         _isFromCache = isFromCache;
         _isLoading = false;
       });
@@ -200,7 +212,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: CircleAvatar(
                           radius: AppDimensions.avatarSizeRegular,
                           backgroundColor: isDark ? AppColors.grey800 : AppColors.white,
-                          child: Icon(Icons.person, size: AppDimensions.iconSizeHuge, color: isDark ? AppColors.white : theme.primaryColor),
+                          backgroundImage: _photoUrl != null ? NetworkImage(_photoUrl!) : null,
+                          child: _photoUrl == null 
+                              ? Icon(Icons.person, size: AppDimensions.iconSizeHuge, color: isDark ? AppColors.white : theme.primaryColor)
+                              : null,
                         ),
                       ),
                     ),

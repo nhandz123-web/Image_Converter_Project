@@ -8,11 +8,13 @@ import 'package:image_picker/image_picker.dart';
 import '../edit_image/edit_image_screen.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../services/auth_service.dart';
 
 // ✅ Import các widget đã tách
 import 'widgets/widgets.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/vip_crown_icon.dart';
+import '../vip/vip_purchase_screen.dart';
 
 /// Màn hình Home chính của ứng dụng
 ///
@@ -33,12 +35,46 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // Image picker
   final ImagePicker _picker = ImagePicker();
+  
+  // VIP Status
+  bool _isVip = false;
+  String _planName = 'Member';
+  String? _expireDate;
 
   @override
   void initState() {
     super.initState();
-    // ✅ REMOVED: Không cần load ở đây vì HomeBloc đã tự load trong main.dart
-    // context.read<HomeBloc>().add(LoadHistoryRequested());
+    // Load VIP status
+    _loadVipStatus();
+  }
+  
+  Future<void> _loadVipStatus() async {
+    try {
+      final authService = context.read<AuthService>();
+      final user = await authService.getUser();
+      if (user != null && mounted) {
+        setState(() {
+          _isVip = user['is_vip'] ?? false;
+          _planName = user['plan_name'] ?? 'Member';
+          _expireDate = user['expire_date'];
+        });
+      }
+    } catch (e) {
+      print('❌ Lỗi load VIP status: $e');
+    }
+  }
+  
+  /// Tính số ngày còn lại của VIP
+  int _calculateDaysRemaining() {
+    if (_expireDate == null) return 0;
+    try {
+      final expiry = DateTime.parse(_expireDate!);
+      final now = DateTime.now();
+      final difference = expiry.difference(now).inDays;
+      return difference > 0 ? difference : 0;
+    } catch (e) {
+      return 0;
+    }
   }
 
   // ════════════════════════════════════════════════════════════════
@@ -74,26 +110,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     slivers: [
                       AppHeader(
                         title: lang.appName,
-                        isVip: true, // TODO: Lấy từ AuthBloc/User state
-                        vipInfo: const VipInfo(
-                          planName: 'Premium',
-                          expiryDate: '25/02/2026',
-                          daysRemaining: 37,
-                          benefits: [
+                        isVip: _isVip,
+                        vipInfo: _isVip ? VipInfo(
+                          planName: _planName,
+                          expiryDate: _expireDate ?? '',
+                          daysRemaining: _calculateDaysRemaining(),
+                          benefits: const [
                             'Chuyển đổi không giới hạn',
                             'Không quảng cáo',
-                            'Dung lượng lưu trữ 50GB',
+                            'Dung lượng lưu trữ lớn',
                             'Hỗ trợ ưu tiên 24/7',
                             'Tính năng nâng cao',
                           ],
-                        ),
+                        ) : null,
                         onUpgradePressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Tính năng mua VIP đang phát triển'),
-                              backgroundColor: AppColors.info,
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const VipPurchaseScreen(),
                             ),
-                          );
+                          ).then((_) => _loadVipStatus()); // Reload VIP status after purchase
                         },
                       ),
                       _buildBody(state, theme, isDark, lang),
