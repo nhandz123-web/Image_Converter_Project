@@ -34,6 +34,8 @@
   "excelToPdf": "Excel sang PDF",
   "qrScan": "Quét mã QR",
   "mergePdf": "Ghép file PDF",
+  "splitPdf": "Tách PDF",
+  "compress": "Nén file",
   "compressData": "Nén dữ liệu",
   "recentDocuments": "Tài liệu gần đây",
   "viewAll": "Xem tất cả",
@@ -138,7 +140,7 @@
     "pressBackAgainToExit": "Nhấn lại lần nữa để thoát",
     "navHome": "Trang chủ",
     "navFiles": "Tệp tin",
-    
+
     "downloadedFiles": "File đã tải",
     "selectedFiles": "Đã chọn {count} file",
     "totalSize": "Tổng: {size}",
@@ -159,5 +161,8 @@
     "cannotOpenFileError": "Không thể mở file: {message}",
     "openFileError": "Lỗi mở file: {error}",
     "shareError": "Lỗi chia sẻ: {error}",
-    "sharedFrom": "Chia sẻ từ ẢnhPDF+"
+    "sharedFrom": "Chia sẻ từ ẢnhPDF+",
+    "noChanges" : "Không có thay đổi nào!",
+    "download" : "Tải xuống",
+    "page": "Trang"
 }

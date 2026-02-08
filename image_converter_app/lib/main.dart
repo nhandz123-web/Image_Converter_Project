@@ -13,6 +13,7 @@ import 'screens/login_screen.dart';
 import 'screens/main_screen.dart';
 import 'blocs/home_bloc.dart';
 import 'theme/app_theme.dart';
+import 'services/notification_service.dart';
 
 /// Global BlocObserver để log và handle errors từ tất cả Blocs
 class AppBlocObserver extends BlocObserver {
@@ -47,7 +48,17 @@ void main() async {
     // Không crash app, chỉ log lỗi
   };
 
-  // 3. Setup BlocObserver để monitor tất cả Blocs
+  // 3. Khởi tạo Notification Service
+  try {
+    final notificationService = NotificationService();
+    await notificationService.init();
+    await notificationService.scheduleDailyMorningGreeting();
+    print('✅ Notification Service initialized');
+  } catch (e) {
+    print('❌ Notification Service init failed: $e');
+  }
+
+  // 4. Setup BlocObserver để monitor tất cả Blocs
   Bloc.observer = AppBlocObserver();
 
   // 4. Load các cài đặt đã lưu từ SharedPreferences
@@ -110,7 +121,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 /// Widget wrapper để lắng nghe các Cubit settings
 /// Tách riêng để code gọn hơn và dễ maintain
 class AppWrapper extends StatelessWidget {

@@ -114,6 +114,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mergePdf => 'Merge PDF';
 
   @override
+  String get splitPdf => 'Split PDF';
+
+  @override
+  String get compress => 'Compress';
+
+  @override
   String get compressData => 'Compress Data';
 
   @override
@@ -484,4 +490,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sharedFrom => 'Shared from SnapPDF';
+
+  @override
+  String get noChanges => 'No changes';
+
+  @override
+  String get download => 'download';
+
+  @override
+  String get page => 'page';
 }

@@ -59,6 +59,7 @@ class AppDimensions {
   static const double radius12 = 12.0;
   static const double radius15 = 15.0;
   static const double radius20 = 20.0;
+  static const double radius24 = 24.0;
   static const double radius25 = 25.0;
 
   static BorderRadius borderRadius2 = BorderRadius.circular(radius2);
@@ -68,6 +69,7 @@ class AppDimensions {
   static BorderRadius borderRadius12 = BorderRadius.circular(radius12);
   static BorderRadius borderRadius15 = BorderRadius.circular(radius15);
   static BorderRadius borderRadius20 = BorderRadius.circular(radius20);
+  static BorderRadius borderRadius24 = BorderRadius.circular(radius24);
   static BorderRadius borderRadius25 = BorderRadius.circular(radius25);
 
   // Top only radius

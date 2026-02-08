@@ -62,9 +62,13 @@ dependencies:
   cached_network_image: ^3.3.1  # Lazy loading & caching images
   path: ^1.9.0                  # Xử lý đường dẫn file
   connectivity_plus: ^6.1.4     # Kiểm tra kết nối mạng
+  file_picker: ^8.0.0+1          # Chọn file từ thiết bị
   in_app_purchase: ^3.2.0       # In-App Purchase (Google Play & App Store)
   in_app_purchase_android: ^0.4.0  # Android platform implementation
   in_app_purchase_storekit: ^0.4.0 # iOS/macOS platform implementation
+  flutter_local_notifications: ^20.0.0
+  timezone: ^0.10.1
+  flutter_timezone: ^5.0.1
 
 dev_dependencies:
   flutter_test:
@@ -122,7 +126,7 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/logo3.png"
+  image_path: "assets/images/logo.png"
   # min_sdk_android: 21  <-- ĐÃ XÓA (Thuộc tính này không tồn tại trong config này)
   # Lưu ý: Nếu muốn icon thích ứng (Adaptive Icon) cho Android 8+, bạn nên có thêm adaptive_icon_background và foreground.
   # Nếu chỉ dùng ảnh đơn giản thì config trên là đủ.

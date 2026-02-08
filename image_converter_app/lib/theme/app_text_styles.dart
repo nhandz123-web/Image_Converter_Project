@@ -35,49 +35,12 @@ class AppTextStyles {
     letterSpacing: 1,
   );
 
-  static const TextStyle h2 = TextStyle(
-    fontSize: fontSize22,
-    fontWeight: weightBold,
-  );
-
   static const TextStyle h3 = TextStyle(
     fontSize: fontSize20,
     fontWeight: weightBold,
   );
 
-  static const TextStyle h4 = TextStyle(
-    fontSize: fontSize18,
-    fontWeight: weightBold,
-  );
-
-  static const TextStyle h5 = TextStyle(
-    fontSize: fontSize16,
-    fontWeight: weightBold,
-  );
-
-  //BODY TEXT
-
-  static const TextStyle bodyLarge = TextStyle(
-    fontSize: fontSize16,
-    fontWeight: weightNormal,
-  );
-
-  static const TextStyle bodyMedium = TextStyle(
-    fontSize: fontSize14,
-    fontWeight: weightNormal,
-  );
-
-  static const TextStyle bodySmall = TextStyle(
-    fontSize: fontSize12,
-    fontWeight: weightNormal,
-  );
-
   // BUTTON TEXT
-
-  static const TextStyle button = TextStyle(
-    fontSize: fontSize16,
-    fontWeight: weightBold,
-  );
 
   static const TextStyle buttonLarge = TextStyle(
     fontSize: fontSize18,
@@ -85,46 +48,10 @@ class AppTextStyles {
     letterSpacing: 0.5,
   );
 
-  //LABELS & CAPTIONS
-
-  static const TextStyle label = TextStyle(
-    fontSize: fontSize13,
-    fontWeight: weightMedium,
-  );
-
-  static const TextStyle caption = TextStyle(
-    fontSize: fontSize11,
-    fontWeight: weightNormal,
-  );
-
-  static const TextStyle captionSmall = TextStyle(
-    fontSize: fontSize9,
-  );
-
   //SPECIAL STYLES
-
-  static const TextStyle subtitle = TextStyle(
-    fontSize: fontSize14,
-    fontWeight: weightMedium,
-  );
 
   static const TextStyle subtitleBold = TextStyle(
     fontSize: fontSize15,
-    fontWeight: weightSemiBold,
-  );
-
-  static const TextStyle titleMedium = TextStyle(
-    fontSize: fontSize15,
-    fontWeight: weightSemiBold,
-  );
-
-  static const TextStyle listTitle = TextStyle(
-    fontSize: fontSize15,
-    fontWeight: weightSemiBold,
-  );
-
-  static const TextStyle cardTitle = TextStyle(
-    fontSize: fontSize12,
     fontWeight: weightSemiBold,
   );
 }

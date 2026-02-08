@@ -7,11 +7,18 @@ import 'network_service.dart';
 
 class DocumentService {
   // ✅ Sử dụng ApiConfig thay vì hardcode IP
-  final String baseUrl = ApiConfig.apiUrl;
+  final String _apiUrl = ApiConfig.apiUrl;
   final _storage = const FlutterSecureStorage();
-  
+
   // ✅ Network Service để kiểm tra kết nối mạng
   final NetworkService _networkService = NetworkService.getInstance();
+
+  // Helper lấy headers
+  Future<Map<String, String>> _getAuthHeaders() async {
+    String? token = await _storage.read(key: 'auth_token');
+    if (token == null) throw Exception('Bạn chưa đăng nhập');
+    return ApiConfig.authHeaders(token);
+  }
   // ==================== CONVERT API ====================
 
   /// Upload ảnh và convert sang PDF
@@ -27,16 +34,15 @@ class DocumentService {
     try {
       // ✅ Kiểm tra mạng trước khi gọi API
       await _networkService.ensureConnectivity();
-      
+
       String? token = await _storage.read(key: 'auth_token');
       if (token == null) return null;
 
-      // Backend route: POST /api/ (root path, không phải /api/convert)
-      var uri = Uri.parse(baseUrl);
+      // Backend route: POST /api/ (root path)
+      var uri = Uri.parse('$_apiUrl${ApiConfig.documentsEndpoint}');
       var request = http.MultipartRequest('POST', uri);
 
-      request.headers['Authorization'] = 'Bearer $token';
-      request.headers['Accept'] = 'application/json';
+      request.headers.addAll(ApiConfig.authHeaders(token));
 
       // Thêm quality parameter
       request.fields['quality'] = quality;
@@ -54,7 +60,7 @@ class DocumentService {
         ));
       }
 
-      var streamedResponse = await request.send();
+      var streamedResponse = await request.send().timeout(ApiConfig.sendTimeout);
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -75,26 +81,18 @@ class DocumentService {
     try {
       // ✅ Kiểm tra mạng trước khi gọi API
       await _networkService.ensureConnectivity();
-      
-      String? token = await _storage.read(key: 'auth_token');
-      
-      // ✅ CRITICAL FIX: Check null token trước khi gọi API
-      if (token == null) {
-        throw Exception('Bạn chưa đăng nhập');
-      }
+
+      final headers = await _getAuthHeaders();
 
       final response = await http.get(
-        Uri.parse('$baseUrl/quality-presets'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      );
+        Uri.parse('$_apiUrl${ApiConfig.qualityPresetsEndpoint}'),
+        headers: headers,
+      ).timeout(ApiConfig.connectTimeout);
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Không lấy được quality presets');
+        throw Exception('Không lấy được quality presets: ${response.statusCode}');
       }
     } catch (e) {
       print("Lỗi getQualityPresets: $e");
@@ -107,35 +105,31 @@ class DocumentService {
   /// Lấy URL preview file (hiển thị inline)
   /// Backend: GET /api/files/{id}/preview
   String getPreviewUrl(int fileId) {
-    return '$baseUrl/files/$fileId/preview';
+    return '$_apiUrl${ApiConfig.filePreviewEndpoint(fileId)}';
   }
 
   /// Lấy URL stream file (hỗ trợ Range requests cho PDF reader)
   /// Backend: GET /api/files/{id}/stream
   String getStreamUrl(int fileId) {
-    return '$baseUrl/files/$fileId/stream';
+    return '$_apiUrl${ApiConfig.fileStreamEndpoint(fileId)}';
   }
 
   /// Lấy URL download file
   /// Backend: GET /api/files/{id}/download
   String getDownloadUrl(int fileId) {
-    return '$baseUrl/files/$fileId/download';
+    return '$_apiUrl${ApiConfig.fileDownloadEndpoint(fileId)}';
   }
 
   /// Lấy thông tin chi tiết file
   /// Backend: GET /api/files/{id}/info
   Future<Map<String, dynamic>?> getFileInfo(int fileId) async {
     try {
-      String? token = await _storage.read(key: 'auth_token');
-      if (token == null) return null;
+      final headers = await _getAuthHeaders();
 
       final response = await http.get(
-        Uri.parse('$baseUrl/files/$fileId/info'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      );
+        Uri.parse('$_apiUrl${ApiConfig.fileInfoEndpoint(fileId)}'),
+        headers: headers,
+      ).timeout(ApiConfig.connectTimeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -158,22 +152,13 @@ class DocumentService {
     try {
       // ✅ Kiểm tra mạng trước khi gọi API
       await _networkService.ensureConnectivity();
-      
-      String? token = await _storage.read(key: 'auth_token');
-      
-      // ✅ CRITICAL FIX: Check null token trước khi gọi API
-      if (token == null) {
-        throw Exception('Bạn chưa đăng nhập');
-      }
 
-      // Backend route: GET /api/ (root path, không phải /api/history)
+      final headers = await _getAuthHeaders();
+
       final response = await http.get(
-        Uri.parse(baseUrl),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      );
+        Uri.parse('$_apiUrl${ApiConfig.documentsEndpoint}'),
+        headers: headers,
+      ).timeout(ApiConfig.receiveTimeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -204,23 +189,16 @@ class DocumentService {
     try {
       // ✅ Kiểm tra mạng trước khi gọi API
       await _networkService.ensureConnectivity();
-      
-      String? token = await _storage.read(key: 'auth_token');
 
-      if (token == null) {
-        throw Exception('Bạn chưa đăng nhập');
-      }
+      final headers = await _getAuthHeaders();
 
-      // Backend route: DELETE /api/{id} (không phải /api/documents/{id})
-      final url = Uri.parse('$baseUrl/$id');
+      // Backend route: DELETE /api/{id}
+      final url = Uri.parse('$_apiUrl${ApiConfig.fileDeleteEndpoint(id)}');
 
       final response = await http.delete(
         url,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      );
+        headers: headers,
+      ).timeout(ApiConfig.connectTimeout);
 
       if (response.statusCode == 200) {
         print('Xóa thành công ID: $id');
@@ -242,19 +220,15 @@ class DocumentService {
     try {
       // ✅ Kiểm tra mạng trước khi gọi API
       await _networkService.ensureConnectivity();
-      
-      String? token = await _storage.read(key: 'auth_token');
 
-      // Backend route: PUT /api/{id} (không phải /api/documents/{id})
+      final headers = await _getAuthHeaders();
+
+      // Backend route: PUT /api/{id}
       final response = await http.put(
-        Uri.parse('$baseUrl/$id'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        Uri.parse('$_apiUrl${ApiConfig.fileRenameEndpoint(id)}'),
+        headers: headers,
         body: jsonEncode({'new_name': newName}),
-      );
+      ).timeout(ApiConfig.connectTimeout);
 
       if (response.statusCode != 200) {
         final body = jsonDecode(response.body);
@@ -280,12 +254,8 @@ class DocumentService {
     try {
       // ✅ Kiểm tra mạng trước khi gọi API
       await _networkService.ensureConnectivity();
-      
-      String? token = await _storage.read(key: 'auth_token');
 
-      if (token == null) {
-        throw Exception('Bạn chưa đăng nhập');
-      }
+      final headers = await _getAuthHeaders();
 
       // Validate input
       if (documentIds.length < 2) {
@@ -302,14 +272,10 @@ class DocumentService {
       }
 
       final response = await http.post(
-        Uri.parse('$baseUrl/merge'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
+        Uri.parse('$_apiUrl${ApiConfig.mergeEndpoint}'),
+        headers: headers,
         body: jsonEncode(requestBody),
-      );
+      ).timeout(ApiConfig.sendTimeout);
 
       final data = jsonDecode(response.body);
 
@@ -336,113 +302,297 @@ class DocumentService {
     }
   }
 
+  // ==================== INFO & STORAGE ====================
+  // (User info methods moved to AuthService)
+
   /// Lấy thông tin dung lượng - Backend chưa có route này
   /// TODO: Cần thêm route trong backend
   Future<Map<String, dynamic>> getStorageUsage() async {
     throw UnimplementedError('Backend chưa hỗ trợ storage usage. Cần thêm route /api/storage');
-
-    // Code tạm comment:
-    /*
-    String? token = await _storage.read(key: 'auth_token');
-    final response = await http.get(
-      Uri.parse('$baseUrl/storage'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Lỗi lấy thông tin dung lượng');
-    }
-    */
   }
 
-  // ==================== USER API ====================
+  // ==================== SPLIT PDF ====================
 
-  /// Lấy thông tin user hiện tại
-  /// Backend: GET /api/get_user
-  Future<Map<String, dynamic>> getUserInfo() async {
+  /// Lấy thông tin PDF (bao gồm số trang) trước khi tách
+  /// Backend: GET /api/pdf-info/{id}
+  Future<Map<String, dynamic>> getPdfInfo(int fileId) async {
     try {
-      // ✅ Kiểm tra mạng trước khi gọi API
       await _networkService.ensureConnectivity();
-      
-      String? token = await _storage.read(key: 'auth_token');
-
-      if (token == null) {
-        throw Exception('Chưa đăng nhập');
-      }
+      final headers = await _getAuthHeaders();
 
       final response = await http.get(
-        Uri.parse('$baseUrl/get_user'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      );
+        Uri.parse('$_apiUrl/pdf-info/$fileId'),
+        headers: headers,
+      ).timeout(ApiConfig.connectTimeout);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body);
 
-        if (data['success'] == true && data['data'] != null) {
-          // Trả về data với format phù hợp cho ProfileScreen
-          return {
-            'name': data['data']['full_name'] ?? 'Người dùng',
-            'email': data['data']['email'] ?? '',
-            'username': data['data']['username'] ?? '',
-            'phone': data['data']['phone'] ?? '',
-            'photo': data['data']['photo'],
-            'address': data['data']['address'] ?? '',
-            'birthday': data['data']['birthday'],
-            'description': data['data']['description'] ?? '',
-          };
-        } else {
-          throw Exception(data['message'] ?? 'Không lấy được thông tin user');
-        }
-      } else if (response.statusCode == 401) {
-        throw Exception('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+      if (response.statusCode == 200 && data['status'] == true) {
+        return data['pdf_info'];
       } else {
-        throw Exception('Lỗi server: ${response.statusCode}');
+        throw Exception(data['message'] ?? 'Không lấy được thông tin PDF');
       }
     } catch (e) {
-      print('Lỗi getUserInfo: $e');
+      print('Lỗi getPdfInfo: $e');
       rethrow;
     }
   }
 
-  /// Cập nhật hồ sơ user - Backend chưa có route
-  /// TODO: Cần thêm route trong backend
-  Future<void> updateProfile(String name, String? currentPassword, String? newPassword) async {
-    throw UnimplementedError('Backend chưa hỗ trợ update profile. Cần thêm route /api/user/update');
+  /// Tách PDF theo phạm vi trang (từ trang X đến trang Y)
+  /// Backend: POST /api/split
+  ///
+  /// [fileId] - ID của file PDF cần tách
+  /// [startPage] - Trang bắt đầu (1-indexed)
+  /// [endPage] - Trang kết thúc (1-indexed)
+  /// [outputName] - Tên file output (optional)
+  Future<Map<String, dynamic>> splitPdf({
+    required int fileId,
+    required int startPage,
+    required int endPage,
+    String? outputName,
+  }) async {
+    try {
+      await _networkService.ensureConnectivity();
+      final headers = await _getAuthHeaders();
 
-    // Code tạm comment:
-    /*
-    String? token = await _storage.read(key: 'auth_token');
+      // Validate input
+      if (startPage < 1) {
+        throw Exception('Trang bắt đầu phải >= 1');
+      }
+      if (endPage < startPage) {
+        throw Exception('Trang kết thúc phải >= trang bắt đầu');
+      }
 
-    Map<String, String> data = {'name': name};
+      Map<String, dynamic> requestBody = {
+        'file_id': fileId,
+        'start_page': startPage,
+        'end_page': endPage,
+      };
 
-    if (newPassword != null && newPassword.isNotEmpty) {
-      data['current_password'] = currentPassword ?? "";
-      data['password'] = newPassword;
-      data['password_confirmation'] = newPassword;
+      if (outputName != null && outputName.isNotEmpty) {
+        requestBody['output_name'] = outputName;
+      }
+
+      final response = await http.post(
+        Uri.parse('$_apiUrl/split'),
+        headers: headers,
+        body: jsonEncode(requestBody),
+      ).timeout(ApiConfig.sendTimeout);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (data['status'] == true) {
+          return data;
+        } else {
+          throw Exception(data['message'] ?? 'Lỗi tách PDF');
+        }
+      } else if (response.statusCode == 401) {
+        throw Exception('Phiên đăng nhập hết hạn');
+      } else if (response.statusCode == 403) {
+        throw Exception(data['message'] ?? 'Bạn cần mua gói VIP để sử dụng tính năng này');
+      } else if (response.statusCode == 422) {
+        throw Exception(data['message'] ?? 'Dữ liệu không hợp lệ');
+      } else {
+        throw Exception(data['message'] ?? 'Lỗi server: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi splitPdf: $e');
+      rethrow;
     }
+  }
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/user/update'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(data),
-    );
+  /// Tách PDF theo danh sách trang cụ thể
+  /// Backend: POST /api/split-by-pages
+  ///
+  /// [fileId] - ID của file PDF cần tách
+  /// [pages] - Danh sách số trang cần lấy [1, 3, 5, 7]
+  /// [outputName] - Tên file output (optional)
+  Future<Map<String, dynamic>> splitPdfByPages({
+    required int fileId,
+    required List<int> pages,
+    String? outputName,
+  }) async {
+    try {
+      await _networkService.ensureConnectivity();
+      final headers = await _getAuthHeaders();
 
-    if (response.statusCode != 200) {
-      final body = jsonDecode(response.body);
-      throw Exception(body['message'] ?? "Lỗi cập nhật hồ sơ");
+      // Validate input
+      if (pages.isEmpty) {
+        throw Exception('Vui lòng chọn ít nhất 1 trang');
+      }
+
+      Map<String, dynamic> requestBody = {
+        'file_id': fileId,
+        'pages': pages,
+      };
+
+      if (outputName != null && outputName.isNotEmpty) {
+        requestBody['output_name'] = outputName;
+      }
+
+      final response = await http.post(
+        Uri.parse('$_apiUrl/split-by-pages'),
+        headers: headers,
+        body: jsonEncode(requestBody),
+      ).timeout(ApiConfig.sendTimeout);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (data['status'] == true) {
+          return data;
+        } else {
+          throw Exception(data['message'] ?? 'Lỗi tách PDF');
+        }
+      } else if (response.statusCode == 401) {
+        throw Exception('Phiên đăng nhập hết hạn');
+      } else if (response.statusCode == 403) {
+        throw Exception(data['message'] ?? 'Bạn cần mua gói VIP để sử dụng tính năng này');
+      } else if (response.statusCode == 422) {
+        throw Exception(data['message'] ?? 'Dữ liệu không hợp lệ');
+      } else {
+        throw Exception(data['message'] ?? 'Lỗi server: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi splitPdfByPages: $e');
+      rethrow;
     }
-    */
+  }
+
+  // ==================== COMPRESS ====================
+
+  /// Nén file (ảnh hoặc PDF)
+  /// Backend: POST /api/compress
+  ///
+  /// [file] - File cần nén
+  /// [quality] - Mức chất lượng: high, medium, low
+  /// [outputName] - Tên file output (optional)
+  Future<Map<String, dynamic>> compressFile({
+    required File file,
+    String quality = 'medium',
+    String? outputName,
+  }) async {
+    try {
+      await _networkService.ensureConnectivity();
+
+      String? token = await _storage.read(key: 'auth_token');
+      if (token == null) throw Exception('Bạn chưa đăng nhập');
+
+      var uri = Uri.parse('$_apiUrl/compress');
+      var request = http.MultipartRequest('POST', uri);
+
+      request.headers.addAll(ApiConfig.authHeaders(token));
+
+      // Thêm quality parameter
+      request.fields['quality'] = quality;
+
+      // Thêm output_name nếu có
+      if (outputName != null && outputName.isNotEmpty) {
+        request.fields['output_name'] = outputName;
+      }
+
+      // Thêm file
+      request.files.add(await http.MultipartFile.fromPath(
+        'file',
+        file.path,
+      ));
+
+      var streamedResponse = await request.send().timeout(ApiConfig.sendTimeout);
+      var response = await http.Response.fromStream(streamedResponse);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (data['status'] == true) {
+          return data;
+        } else {
+          throw Exception(data['message'] ?? 'Lỗi nén file');
+        }
+      } else if (response.statusCode == 401) {
+        throw Exception('Phiên đăng nhập hết hạn');
+      } else if (response.statusCode == 403) {
+        throw Exception(data['message'] ?? 'Bạn cần mua gói VIP để sử dụng tính năng này');
+      } else if (response.statusCode == 422) {
+        throw Exception(data['message'] ?? 'Dữ liệu không hợp lệ');
+      } else {
+        throw Exception(data['message'] ?? 'Lỗi server: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi compressFile: $e');
+      rethrow;
+    }
+  }
+
+  /// Nén file đã có trong hệ thống (theo fileId)
+  /// Backend: POST /api/compress với file_id
+  Future<Map<String, dynamic>> compressExistingFile({
+    required int fileId,
+    String quality = 'medium',
+    String? outputName,
+  }) async {
+    try {
+      await _networkService.ensureConnectivity();
+      final headers = await _getAuthHeaders();
+
+      Map<String, dynamic> requestBody = {
+        'file_id': fileId,
+        'quality': quality,
+      };
+
+      if (outputName != null && outputName.isNotEmpty) {
+        requestBody['output_name'] = outputName;
+      }
+
+      final response = await http.post(
+        Uri.parse('$_apiUrl/compress'),
+        headers: headers,
+        body: jsonEncode(requestBody),
+      ).timeout(ApiConfig.sendTimeout);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (data['status'] == true) {
+          return data;
+        } else {
+          throw Exception(data['message'] ?? 'Lỗi nén file');
+        }
+      } else if (response.statusCode == 401) {
+        throw Exception('Phiên đăng nhập hết hạn');
+      } else if (response.statusCode == 403) {
+        throw Exception(data['message'] ?? 'Bạn cần mua gói VIP để sử dụng tính năng này');
+      } else {
+        throw Exception(data['message'] ?? 'Lỗi server: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi compressExistingFile: $e');
+      rethrow;
+    }
+  }
+
+  /// Lấy thông tin các mức nén
+  /// Backend: GET /api/compression-info
+  Future<Map<String, dynamic>> getCompressionInfo() async {
+    try {
+      await _networkService.ensureConnectivity();
+      final headers = await _getAuthHeaders();
+
+      final response = await http.get(
+        Uri.parse('$_apiUrl/compression-info'),
+        headers: headers,
+      ).timeout(ApiConfig.connectTimeout);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        return data;
+      } else {
+        throw Exception(data['message'] ?? 'Không lấy được thông tin nén');
+      }
+    } catch (e) {
+      print('Lỗi getCompressionInfo: $e');
+      rethrow;
+    }
   }
 }

@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/painting.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'cache_service.dart';
 import '../config/api_config.dart';
 import 'network_service.dart';
@@ -137,9 +139,24 @@ class AuthService {
     try {
       final cacheService = await CacheService.getInstance();
       await cacheService.clearAllCache();
-      print('🗑️ Đã xóa tất cả cache khi logout');
+      print('🗑️ Đã xóa tất cả cache local khi logout');
     } catch (e) {
-      print('⚠️ Lỗi xóa cache khi logout: $e');
+      print('⚠️ Lỗi xóa cache local: $e');
+    }
+
+    // Xóa cache hình ảnh (Disk & Memory)
+    try {
+      // Xóa cache file trên đĩa (do cached_network_image tạo ra)
+      await DefaultCacheManager().emptyCache();
+      
+      // Xóa cache trong RAM
+      imageCache.clear();
+      imageCache.clearLiveImages();
+      
+      print('🗑️ Đã xóa cache hình ảnh (Disk & RAM)');
+    } catch (e) {
+      // Có thể lỗi nếu chưa import hoặc chưa dùng bao giờ, không sao
+      print('⚠️ Lỗi xóa cache hình ảnh: $e');
     }
   }
 
@@ -292,5 +309,67 @@ class AuthService {
   // ==========================================
   Future<String?> getToken() async {
     return await _storage.read(key: 'auth_token');
+  }
+  // ==========================================
+  // 📝 CẬP NHẬT THÔNG TIN USER (UPDATE PROFILE)
+  // ==========================================
+  Future<void> updateProfile({
+    required String name,
+    String? currentPassword,
+    String? newPassword,
+  }) async {
+    try {
+      // ✅ Kiểm tra mạng trước khi gọi API
+      final hasNetwork = await _networkService.checkConnectivity();
+      if (!hasNetwork) {
+        throw DioException(
+            requestOptions: RequestOptions(path: ''),
+            type: DioExceptionType.connectionTimeout,
+            error: 'Không có kết nối mạng.');
+      }
+
+      print("🚀 Đang gọi API Update Profile...");
+
+      // Lấy token để gắn vào header (Dio instance này chưa tự động gắn token cho mọi request)
+      final token = await _storage.read(key: 'auth_token');
+      if (token == null) throw Exception("Bạn chưa đăng nhập");
+
+      final options = Options(headers: {'Authorization': 'Bearer $token'});
+
+      // 1. Cập nhật thông tin cơ bản (Tên)
+      final profileUrl = '$baseUrl${ApiConfig.updateProfileEndpoint}';
+      await _dio.post(
+        profileUrl,
+        data: {'full_name': name},
+        options: options,
+      );
+
+      // 2. Đổi mật khẩu (nếu có)
+      if (newPassword != null && newPassword.isNotEmpty) {
+        if (currentPassword == null || currentPassword.isEmpty) {
+          throw Exception('Vui lòng nhập mật khẩu hiện tại');
+        }
+
+        final passwordUrl = '$baseUrl${ApiConfig.changePasswordEndpoint}';
+        await _dio.post(
+          passwordUrl,
+          data: {
+            'current_password': currentPassword,
+            'new_password': newPassword,
+            'new_password_confirmation': newPassword,
+          },
+          options: options,
+        );
+      }
+      
+      // 3. Invalidate cache để load lại info mới
+      await invalidateUserCache();
+      
+      print("✅ Cập nhật profile thành công");
+    } on DioException catch (e) {
+      throw Exception(_handleDioError(e));
+    } catch (e) {
+      throw Exception("Lỗi cập nhật: $e");
+    }
   }
 }

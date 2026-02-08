@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
@@ -8,11 +9,15 @@ import '../../services/local_file_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_styles.dart';
+import '../../theme/app_styles.dart';
+import '../../theme/app_component_styles.dart';
 import '../../l10n/app_localizations.dart';
 import '../file_preview_screen.dart';
+import '../../widgets/app_header.dart';
 
 /// Màn hình hiển thị các file đã tải xuống
 /// Hoạt động hoàn toàn OFFLINE
+/// Updated: UI synced with Home Screen (Glassmorphism, colors, AppHeader)
 class DownloadedFilesScreen extends StatefulWidget {
   const DownloadedFilesScreen({super.key});
 
@@ -61,40 +66,111 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
       builder: (context, state) {
         return Scaffold(
           body: Container(
-            decoration: BoxDecoration(
-              gradient: isDark
-                  ? AppColors.backgroundGradientDark
-                  : AppColors.backgroundGradientLight,
-            ),
-            child: RefreshIndicator(
-              onRefresh: () async {
-                context.read<DownloadedFilesBloc>().add(LoadDownloadedFilesRequested());
-                // Đợi một chút để animation refresh hoàn tất
-                await Future.delayed(const Duration(milliseconds: 500));
-              },
-              color: AppColors.primary,
-              backgroundColor: isDark ? AppColors.cardDark : AppColors.white,
-              child: NotificationListener<ScrollNotification>(
-                onNotification: _onScrollNotification,
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: [
-                    _buildAppBar(isDark, state, lang),
-                    _buildBody(state, theme, isDark, lang),
-                    // Loading indicator khi đang load thêm
-                    if (state is DownloadedFilesLoaded && state.isLoadingMore)
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Center(
-                            child: CircularProgressIndicator(),
+            decoration: AppStyles.homeBackground(isDark),
+            child: Stack(
+              children: [
+                // Background Blobs (Decoration for Glass Effect)
+                if (!isDark) ...[
+                  Positioned(
+                    top: -100,
+                    right: -100,
+                    child: Container(
+                      width: 300,
+                      height: 300,
+                      decoration: AppStyles.homeBlob(Colors.blue.withOpacity(0.2)),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 100,
+                    left: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: AppStyles.homeBlob(Colors.purple.withOpacity(0.15), blurRadius: 60),
+                    ),
+                  ),
+                ],
+
+                // Main Content
+                RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<DownloadedFilesBloc>().add(LoadDownloadedFilesRequested());
+                    await Future.delayed(const Duration(milliseconds: 500));
+                  },
+                  color: AppColors.primary,
+                  backgroundColor: isDark ? AppColors.cardDark : AppColors.white,
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: _onScrollNotification,
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        _buildAppBar(isDark, state, lang),
+                        
+                        // Summary info row
+                        if (state is DownloadedFilesLoaded && !state.isSelectMode && state.files.isNotEmpty)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), // Adjusted padding
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.folder_open_rounded,
+                                    size: 16,
+                                    color: isDark ? Colors.white54 : Colors.grey[600],
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${state.files.length} files • ${state.totalSize}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: isDark ? Colors.white54 : Colors.grey[600],
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  InkWell(
+                                    onTap: () {
+                                      context.read<DownloadedFilesBloc>().add(ToggleSelectMode());
+                                    },
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      child: Text(
+                                        lang.selectMultiple,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                  ],
+
+                        _buildBody(state, theme, isDark, lang),
+                        
+                        // Loading indicator
+                        if (state is DownloadedFilesLoaded && state.isLoadingMore)
+                          const SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                          ),
+                          
+                        // Bottom padding
+                        const SliverToBoxAdapter(child: SizedBox(height: 80)),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         );
@@ -130,101 +206,37 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
     final isSelectMode = state is DownloadedFilesLoaded && state.isSelectMode;
     final selectedCount = state is DownloadedFilesLoaded ? state.selectedFileIds.length : 0;
 
-    return SliverAppBar(
-      floating: true,
-      pinned: true,
-      elevation: AppDimensions.elevation0,
-      toolbarHeight: AppDimensions.appBarHeight,
-      automaticallyImplyLeading: false,
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: isDark
-              ? AppColors.appBarGradientDark
-              : AppColors.appBarGradientLight,
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: AppDimensions.paddingH16,
-            child: Row(
-              children: [
-                // Icon hoặc Back button
-                Container(
-                  padding: AppDimensions.paddingAll8,
-                  decoration: BoxDecoration(
-                    color: AppColors.white.withOpacity(AppColors.opacity20),
-                    borderRadius: AppDimensions.borderRadius12,
-                  ),
-                  child: Icon(
-                    isSelectMode ? Icons.check_box_outlined : Icons.folder_rounded,
-                    color: AppColors.white,
-                    size: AppDimensions.iconSizeRegular,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spacing12),
-
-                // Title
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isSelectMode 
-                            ? lang.selectedFiles(selectedCount)
-                            : lang.downloadedFiles,
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontWeight: AppTextStyles.weightBold,
-                          fontSize: AppTextStyles.fontSize20,
-                        ),
-                      ),
-                      if (!isSelectMode && state is DownloadedFilesLoaded)
-                        Text(
-                          '${state.files.length}/${state.totalCount} files • ${state.totalSize}',
-                          style: TextStyle(
-                            color: AppColors.white.withOpacity(0.8),
-                            fontSize: AppTextStyles.fontSize12,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-
-                // Actions
-                if (isSelectMode) ...[
-                  IconButton(
-                    icon: const Icon(Icons.select_all, color: AppColors.white),
-                    onPressed: () {
-                      context.read<DownloadedFilesBloc>().add(SelectAllFiles());
-                    },
-                    tooltip: lang.selectAll,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: AppColors.white),
-                    onPressed: selectedCount > 0 ? () => _showDeleteConfirmDialog(lang) : null,
-                    tooltip: lang.delete,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.white),
-                    onPressed: () {
-                      context.read<DownloadedFilesBloc>().add(ToggleSelectMode());
-                    },
-                    tooltip: lang.cancel,
-                  ),
-                ] else ...[
-                  IconButton(
-                    icon: const Icon(Icons.checklist_rounded, color: AppColors.white),
-                    onPressed: () {
-                      context.read<DownloadedFilesBloc>().add(ToggleSelectMode());
-                    },
-                    tooltip: lang.selectMultiple,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
+    return AppHeader(
+      title: isSelectMode 
+          ? lang.selectedFiles(selectedCount) 
+          : lang.downloadedFiles,
+      showLogo: !isSelectMode,
+      showVipCrown: !isSelectMode, 
+      showProfileButton: !isSelectMode,
+      leading: isSelectMode 
+          ? IconButton(
+              icon: Icon(Icons.close, color: isDark ? Colors.white : Colors.black87),
+              onPressed: () {
+                 context.read<DownloadedFilesBloc>().add(ToggleSelectMode());
+              },
+            )
+          : null,
+      actions: isSelectMode 
+          ? [
+              IconButton(
+                icon: Icon(Icons.select_all, color: isDark ? Colors.white : Colors.black87),
+                onPressed: () {
+                  context.read<DownloadedFilesBloc>().add(SelectAllFiles());
+                },
+                tooltip: lang.selectAll,
+              ),
+              IconButton(
+                icon: Icon(Icons.delete_outline, color: AppColors.error),
+                onPressed: selectedCount > 0 ? () => _showDeleteConfirmDialog(lang) : null,
+                tooltip: lang.delete,
+              ),
+            ]
+          : null,
     );
   }
 
@@ -258,7 +270,7 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
             (context, index) {
               final file = state.files[index];
               final isSelected = state.selectedFileIds.contains(file.id);
-              
+
               return _buildFileCard(
                 file: file,
                 isDark: isDark,
@@ -284,77 +296,38 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon với gradient background
+          // Icon styled like HistoryList empty state
           Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [AppColors.blue900.withOpacity(0.3), AppColors.purple400.withOpacity(0.3)]
-                    : [AppColors.softBlue.withOpacity(0.1), AppColors.softPurple.withOpacity(0.1)],
-              ),
-              shape: BoxShape.circle,
-            ),
+            width: 80,
+            height: 80,
+            decoration: AppComponentStyles.emptyStateIcon(isDark: isDark),
             child: Icon(
               Icons.folder_off_outlined,
-              size: 80,
-              color: isDark ? AppColors.grey400 : AppColors.grey500,
+              size: 32,
+              color: isDark ? Colors.white54 : Colors.blue.shade300,
             ),
           ),
-          const SizedBox(height: 24),
-          
+          const SizedBox(height: 16),
+
           Text(
             lang.noFilesYet,
             style: TextStyle(
-              fontSize: AppTextStyles.fontSize20,
-              fontWeight: AppTextStyles.weightSemiBold,
-              color: isDark ? AppColors.white : AppColors.grey800,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white70 : Colors.grey[700],
             ),
           ),
           const SizedBox(height: 8),
-          
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
               lang.downloadedFilesHint,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: AppTextStyles.fontSize14,
-                color: isDark ? AppColors.grey400 : AppColors.grey600,
+                fontSize: 14,
+                color: isDark ? Colors.white38 : Colors.grey[500],
               ),
-            ),
-          ),
-          const SizedBox(height: 32),
-          
-          // Offline badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? AppColors.success.withOpacity(0.2)
-                  : AppColors.success.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppColors.success.withOpacity(0.3),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.offline_bolt,
-                  size: 18,
-                  color: AppColors.success,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  lang.worksOffline,
-                  style: TextStyle(
-                    color: AppColors.success,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
             ),
           ),
         ],
@@ -370,189 +343,205 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
     required bool isSelected,
     required AppLocalizations lang,
   }) {
+    // Determine colors
+    final bool isPdf = file.type.toLowerCase().contains('pdf');
+    final Color iconColor = isPdf
+        ? (isDark ? const Color(0xFFF43F5E) : const Color(0xFFE11D48)) // Rose
+        : (isDark ? const Color(0xFF3B82F6) : const Color(0xFF2563EB)); // Blue
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.cardDark.withOpacity(isSelected ? 0.9 : 0.7)
-            : AppColors.white.withOpacity(isSelected ? 1 : 0.9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isSelected
-              ? AppColors.primary
-              : (isDark ? AppColors.grey700 : AppColors.grey200),
-          width: isSelected ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withOpacity(0.3)
-                : AppColors.grey300.withOpacity(0.5),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            if (isSelectMode) {
-              context.read<DownloadedFilesBloc>().add(ToggleFileSelection(file.id));
-            } else {
-              _openFile(file, lang);
-            }
-          },
-          onLongPress: () {
-            if (!isSelectMode) {
-              context.read<DownloadedFilesBloc>().add(ToggleSelectMode());
-              context.read<DownloadedFilesBloc>().add(ToggleFileSelection(file.id));
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Checkbox hoặc Icon
-                if (isSelectMode)
-                  Container(
-                    margin: const EdgeInsets.only(right: 12),
-                    child: Checkbox(
-                      value: isSelected,
-                      onChanged: (_) {
-                        context.read<DownloadedFilesBloc>().add(ToggleFileSelection(file.id));
-                      },
-                      activeColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  )
-                else
-                  // File type icon with gradient
-                  Container(
-                    width: 52,
-                    height: 52,
-                    margin: const EdgeInsets.only(right: 16),
-                    decoration: BoxDecoration(
-                      gradient: _getFileTypeGradient(file.type, isDark),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      _getFileTypeIcon(file.type),
-                      color: AppColors.white,
-                      size: 26,
-                    ),
-                  ),
-
-                // File info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: AppComponentStyles.fileCard(
+              isDark: isDark,
+              isSelected: isSelected,
+              borderRadius: 20,
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  if (isSelectMode) {
+                    context.read<DownloadedFilesBloc>().add(ToggleFileSelection(file.id));
+                  } else {
+                    _openFile(file, lang);
+                  }
+                },
+                onLongPress: () {
+                  if (!isSelectMode) {
+                    context.read<DownloadedFilesBloc>().add(ToggleSelectMode());
+                    context.read<DownloadedFilesBloc>().add(ToggleFileSelection(file.id));
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
                     children: [
-                      Text(
-                        file.name,
-                        style: TextStyle(
-                          fontWeight: AppTextStyles.weightSemiBold,
-                          fontSize: AppTextStyles.fontSize16,
-                          color: isDark ? AppColors.white : AppColors.grey800,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          _buildInfoChip(
-                            file.type.toUpperCase(),
-                            isDark,
+                      // Checkbox for selection mode
+                      if (isSelectMode)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: Transform.scale(
+                            scale: 1.2,
+                            child: Checkbox(
+                              value: isSelected,
+                              onChanged: (_) {
+                                context.read<DownloadedFilesBloc>().add(ToggleFileSelection(file.id));
+                              },
+                              activeColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              side: BorderSide(
+                                color: isDark ? Colors.white54 : Colors.grey[400]!,
+                                width: 1.5,
+                              ),
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          _buildInfoChip(
-                            file.formattedSize,
-                            isDark,
+                        )
+                      else
+                        // Icon with Gradient Background
+                        Container(
+                          margin: const EdgeInsets.only(right: 16),
+                          padding: const EdgeInsets.all(12),
+                          decoration: AppComponentStyles.iconGradientContainer(
+                            gradientColors: [iconColor, iconColor],
+                            borderRadius: 14,
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _formatDate(file.downloadedAt, lang),
-                        style: TextStyle(
-                          fontSize: AppTextStyles.fontSize12,
-                          color: isDark ? AppColors.grey400 : AppColors.grey500,
+                          child: Icon(
+                            isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded,
+                            color: iconColor,
+                            size: 24,
+                          ),
+                        ),
+
+                      // File Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              file.name,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                                color: isDark ? Colors.white.withOpacity(0.9) : const Color(0xFF1E293B),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                _buildInfoChip(
+                                  file.type.toUpperCase(),
+                                  isDark,
+                                  isPdf,
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.sd_storage_rounded,
+                                  size: 12,
+                                  color: isDark ? Colors.white38 : Colors.grey[500],
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  file.formattedSize,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? Colors.white38 : Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.access_time_rounded,
+                                  size: 12,
+                                  color: isDark ? Colors.white38 : Colors.grey[500],
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    _formatDate(file.downloadedAt, lang),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark ? Colors.white38 : Colors.grey[600],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
+                      
+                      // More actions
+                      if (!isSelectMode)
+                        PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_vert_rounded,
+                            color: isDark ? Colors.white38 : Colors.grey[500],
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          color: isDark ? AppColors.cardDark : AppColors.white,
+                          elevation: 4,
+                          onSelected: (value) => _handleMenuAction(value, file, lang),
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              value: 'open',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.open_in_new, color: AppColors.primary, size: 20),
+                                  const SizedBox(width: 12),
+                                  Text(lang.openFile),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'preview',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.visibility_outlined, color: AppColors.secondary, size: 20),
+                                  const SizedBox(width: 12),
+                                  Text(lang.preview),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'share',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.share_outlined, color: AppColors.success, size: 20),
+                                  const SizedBox(width: 12),
+                                  Text(lang.shareFile),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuDivider(),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                  const SizedBox(width: 12),
+                                  Text(lang.delete, style: const TextStyle(color: Colors.red)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
-
-                // Action buttons
-                if (!isSelectMode)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.share_rounded,
-                          color: isDark ? AppColors.blue300 : AppColors.primary,
-                        ),
-                        onPressed: () => _shareFile(file, lang),
-                        tooltip: lang.shareFile,
-                      ),
-                      PopupMenuButton<String>(
-                        icon: Icon(
-                          Icons.more_vert,
-                          color: isDark ? AppColors.grey400 : AppColors.grey600,
-                        ),
-                        onSelected: (value) => _handleMenuAction(value, file, lang),
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: 'open',
-                            child: Row(
-                              children: [
-                                const Icon(Icons.open_in_new),
-                                const SizedBox(width: 12),
-                                Text(lang.openFile),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: 'preview',
-                            child: Row(
-                              children: [
-                                const Icon(Icons.visibility),
-                                const SizedBox(width: 12),
-                                Text(lang.preview),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: 'share',
-                            child: Row(
-                              children: [
-                                const Icon(Icons.share),
-                                const SizedBox(width: 12),
-                                Text(lang.shareFile),
-                              ],
-                            ),
-                          ),
-                          const PopupMenuDivider(),
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                const Icon(Icons.delete_outline, color: Colors.red),
-                                const SizedBox(width: 12),
-                                Text(lang.delete, style: const TextStyle(color: Colors.red)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-              ],
+              ),
             ),
           ),
         ),
@@ -560,21 +549,22 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
     );
   }
 
-  Widget _buildInfoChip(String label, bool isDark) {
+  Widget _buildInfoChip(String label, bool isDark, bool isPdf) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.grey700.withOpacity(0.5)
-            : AppColors.grey100,
-        borderRadius: BorderRadius.circular(4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: AppComponentStyles.infoChip(
+        isDark: isDark,
+        isPdf: isPdf,
+        borderRadius: 4,
       ),
       child: Text(
         label,
         style: TextStyle(
-          fontSize: AppTextStyles.fontSize11,
-          fontWeight: FontWeight.w500,
-          color: isDark ? AppColors.grey300 : AppColors.grey600,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: isPdf
+            ? (isDark ? Colors.red[200] : Colors.red[700])
+            : (isDark ? Colors.blue[200] : Colors.blue[700]),
         ),
       ),
     );
@@ -583,66 +573,6 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
   // ════════════════════════════════════════════════════════════════
   //                         HELPERS
   // ════════════════════════════════════════════════════════════════
-
-  LinearGradient _getFileTypeGradient(String type, bool isDark) {
-    switch (type.toLowerCase()) {
-      case 'pdf':
-        return LinearGradient(
-          colors: isDark
-              ? [Colors.red[700]!, Colors.red[900]!]
-              : [Colors.red[400]!, Colors.red[600]!],
-        );
-      case 'image':
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-        return LinearGradient(
-          colors: isDark
-              ? [Colors.green[700]!, Colors.teal[800]!]
-              : [Colors.green[400]!, Colors.teal[500]!],
-        );
-      case 'word':
-      case 'docx':
-        return LinearGradient(
-          colors: isDark
-              ? [Colors.blue[700]!, Colors.blue[900]!]
-              : [Colors.blue[400]!, Colors.blue[600]!],
-        );
-      case 'excel':
-      case 'xlsx':
-        return LinearGradient(
-          colors: isDark
-              ? [Colors.green[700]!, Colors.green[900]!]
-              : [Colors.green[500]!, Colors.green[700]!],
-        );
-      default:
-        return LinearGradient(
-          colors: isDark
-              ? [AppColors.grey700, AppColors.grey800]
-              : [AppColors.grey400, AppColors.grey600],
-        );
-    }
-  }
-
-  IconData _getFileTypeIcon(String type) {
-    switch (type.toLowerCase()) {
-      case 'pdf':
-        return Icons.picture_as_pdf_rounded;
-      case 'image':
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-        return Icons.image_rounded;
-      case 'word':
-      case 'docx':
-        return Icons.description_rounded;
-      case 'excel':
-      case 'xlsx':
-        return Icons.table_chart_rounded;
-      default:
-        return Icons.insert_drive_file_rounded;
-    }
-  }
 
   String _formatDate(DateTime date, AppLocalizations lang) {
     final now = DateTime.now();
@@ -657,7 +587,7 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
     } else if (diff.inDays < 7) {
       return lang.daysAgo(diff.inDays);
     } else {
-      return '${date.day}/${date.month}/${date.year}';
+      return '${date.day}/${date.month}';
     }
   }
 
@@ -717,10 +647,13 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
 
   Future<void> _shareFile(LocalFile file, AppLocalizations lang) async {
     try {
-      await Share.shareXFiles(
+      final result = await Share.shareXFiles(
         [XFile(file.path)],
         text: lang.sharedFrom,
       );
+      if (result.status == ShareResultStatus.success) {
+        // Success
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -735,9 +668,8 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
 
   void _showDeleteSingleConfirmDialog(LocalFile file, AppLocalizations lang) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Capture bloc reference before opening dialog
     final bloc = context.read<DownloadedFilesBloc>();
-    
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -754,6 +686,7 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
         ),
         content: Text(
           lang.confirmDeleteSingle(file.name),
+          style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
         ),
         actions: [
           TextButton(
@@ -767,8 +700,9 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
             ),
-            child: Text(lang.delete, style: const TextStyle(color: Colors.white)),
+            child: Text(lang.delete),
           ),
         ],
       ),
@@ -779,7 +713,7 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
     final bloc = context.read<DownloadedFilesBloc>();
     final state = bloc.state;
     if (state is! DownloadedFilesLoaded) return;
-    
+
     final selectedFileIds = state.selectedFileIds.toList();
     final selectedCount = selectedFileIds.length;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -800,6 +734,7 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
         ),
         content: Text(
           lang.confirmDeleteMultiple(selectedCount),
+          style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
         ),
         actions: [
           TextButton(
@@ -809,12 +744,14 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(dialogContext);
+              // Send the list of IDs
               bloc.add(DeleteMultipleFilesRequested(selectedFileIds));
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
             ),
-            child: Text(lang.delete, style: const TextStyle(color: Colors.white)),
+            child: Text(lang.delete),
           ),
         ],
       ),

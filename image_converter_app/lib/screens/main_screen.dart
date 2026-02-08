@@ -6,6 +6,7 @@ import 'dart:io';
 
 import '../theme/app_colors.dart';
 import '../blocs/downloaded_files_bloc.dart';
+import '../blocs/home_bloc.dart';
 
 import 'home/home_screen.dart';
 import 'downloaded_files/downloaded_files_screen.dart';
@@ -41,6 +42,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 300),
     );
     _animationController.forward();
+    
+    // ✅ AUTO RELOAD DATA: Khi vào màn hình chính (sau Login hoặc mở lại app)
+    // Buộc reload History từ API để đảm bảo không hiển thị data cũ của user trước
+    // HomeBloc là global nên cần call event này mỗi khi MainScreen được tạo lại
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<HomeBloc>().add(LoadHistoryRequested(forceRefresh: true));
+    });
   }
 
   @override

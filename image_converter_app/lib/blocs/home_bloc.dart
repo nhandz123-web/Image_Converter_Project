@@ -42,6 +42,44 @@ class RenameDocumentRequested extends HomeEvent {
   RenameDocumentRequested(this.id, this.newName);
 }
 
+// EVENT TÁCH PDF: Tách theo phạm vi trang (từ X đến Y)
+class SplitPdfRequested extends HomeEvent {
+  final int fileId;
+  final int startPage;
+  final int endPage;
+  final String? outputName;
+  SplitPdfRequested({
+    required this.fileId,
+    required this.startPage,
+    required this.endPage,
+    this.outputName,
+  });
+}
+
+// EVENT TÁCH PDF: Tách theo danh sách trang cụ thể [1, 3, 5]
+class SplitPdfByPagesRequested extends HomeEvent {
+  final int fileId;
+  final List<int> pages;
+  final String? outputName;
+  SplitPdfByPagesRequested({
+    required this.fileId,
+    required this.pages,
+    this.outputName,
+  });
+}
+
+// EVENT NÉN FILE: Nén ảnh hoặc PDF
+class CompressFileRequested extends HomeEvent {
+  final File file;
+  final String quality; // high, medium, low
+  final String? outputName;
+  CompressFileRequested({
+    required this.file,
+    this.quality = 'medium',
+    this.outputName,
+  });
+}
+
 // --- States ---
 abstract class HomeState {}
 class HomeInitial extends HomeState {}
@@ -61,6 +99,9 @@ class HistoryLoaded extends HomeState {
   final DateTime? cacheTime; // Thời điểm cache
   HistoryLoaded(this.documents, {this.isFromCache = false, this.cacheTime});
 }
+
+// Alias cho HistoryLoaded để dễ sử dụng trong các widget
+typedef HomeHistoryLoaded = HistoryLoaded;
 
 // --- Bloc ---
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
@@ -232,6 +273,73 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       } catch (e) {
         emit(HomeFailure("Không đổi tên được: ${e.toString()}"));
         // ✅ Tự động reload history sau lỗi
+        add(LoadHistoryRequested());
+      }
+    });
+
+    // 7. Xử lý Tách PDF theo range (từ trang X đến Y)
+    on<SplitPdfRequested>((event, emit) async {
+      emit(HomeLoading());
+      try {
+        await _documentService.splitPdf(
+          fileId: event.fileId,
+          startPage: event.startPage,
+          endPage: event.endPage,
+          outputName: event.outputName,
+        );
+
+        // Invalidate cache vì có document mới
+        final cacheService = await CacheService.getInstance();
+        await cacheService.invalidateDocumentsCache();
+
+        emit(HomeSuccess("Tách PDF thành công!"));
+        add(LoadHistoryRequested(forceRefresh: true));
+      } catch (e) {
+        emit(HomeFailure("Lỗi tách PDF: ${e.toString()}"));
+        add(LoadHistoryRequested());
+      }
+    });
+
+    // 8. Xử lý Tách PDF theo danh sách trang cụ thể
+    on<SplitPdfByPagesRequested>((event, emit) async {
+      emit(HomeLoading());
+      try {
+        await _documentService.splitPdfByPages(
+          fileId: event.fileId,
+          pages: event.pages,
+          outputName: event.outputName,
+        );
+
+        // Invalidate cache vì có document mới
+        final cacheService = await CacheService.getInstance();
+        await cacheService.invalidateDocumentsCache();
+
+        emit(HomeSuccess("Tách PDF thành công!"));
+        add(LoadHistoryRequested(forceRefresh: true));
+      } catch (e) {
+        emit(HomeFailure("Lỗi tách PDF: ${e.toString()}"));
+        add(LoadHistoryRequested());
+      }
+    });
+
+    // 9. Xử lý Nén file (ảnh hoặc PDF)
+    on<CompressFileRequested>((event, emit) async {
+      emit(HomeLoading());
+      try {
+        await _documentService.compressFile(
+          file: event.file,
+          quality: event.quality,
+          outputName: event.outputName,
+        );
+
+        // Invalidate cache vì có document mới
+        final cacheService = await CacheService.getInstance();
+        await cacheService.invalidateDocumentsCache();
+
+        emit(HomeSuccess("Nén file thành công!"));
+        add(LoadHistoryRequested(forceRefresh: true));
+      } catch (e) {
+        emit(HomeFailure("Lỗi nén file: ${e.toString()}"));
         add(LoadHistoryRequested());
       }
     });

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_converter_app/l10n/app_localizations.dart';
-import '../services/document_service.dart';
 import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_dimensions.dart';
@@ -19,8 +18,7 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _documentService = DocumentService();
-  final _authService = AuthService(); // Thêm để invalidate cache
+  final _authService = AuthService();
 
   late TextEditingController _nameController;
   final _currentPassController = TextEditingController();
@@ -57,10 +55,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       String? newPass = _newPassController.text.isNotEmpty ? _newPassController.text : null;
       String? currentPass = _currentPassController.text.isNotEmpty ? _currentPassController.text : null;
 
-      await _documentService.updateProfile(name, currentPass, newPass);
+      // ✅ Kiểm tra xem có thay đổi gì không
+      bool isNameChanged = name != widget.currentName;
+      bool isPassChanged = newPass != null && newPass.isNotEmpty;
+
+      if (!isNameChanged && !isPassChanged) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.noChanges ?? "Không có thay đổi nào!"),
+              backgroundColor: Colors.orange,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: AppDimensions.borderRadius10),
+            ),
+          );
+        }
+        return;
+      }
+
+      await _authService.updateProfile(
+        name: name,
+        currentPassword: currentPass,
+        newPassword: newPass,
+      );
       
-      // ✅ Invalidate user cache sau khi update thành công
-      await _authService.invalidateUserCache();
+      // Cache invalidated inside updateProfile in AuthService
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

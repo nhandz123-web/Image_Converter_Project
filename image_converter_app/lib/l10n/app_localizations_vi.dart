@@ -114,6 +114,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get mergePdf => 'Ghép file PDF';
 
   @override
+  String get splitPdf => 'Tách PDF';
+
+  @override
+  String get compress => 'Nén file';
+
+  @override
   String get compressData => 'Nén dữ liệu';
 
   @override
@@ -482,4 +488,13 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get sharedFrom => 'Chia sẻ từ ẢnhPDF+';
+
+  @override
+  String get noChanges => 'Không có thay đổi nào!';
+
+  @override
+  String get download => 'Tải xuống';
+
+  @override
+  String get page => 'Trang';
 }

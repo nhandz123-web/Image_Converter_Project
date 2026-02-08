@@ -34,6 +34,8 @@
   "excelToPdf": "Excel to PDF",
   "qrScan": "QR Scan",
   "mergePdf": "Merge PDF",
+  "splitPdf": "Split PDF",
+  "compress": "Compress",
   "compressData": "Compress Data",
   "recentDocuments": "Recent Documents",
   "viewAll": "View All",
@@ -138,7 +140,7 @@
     "pressBackAgainToExit": "Press back again to exit",
     "navHome": "Home",
     "navFiles": "Files",
-    
+
     "downloadedFiles": "Downloaded Files",
     "selectedFiles": "Selected {count} files",
     "totalSize": "Total: {size}",
@@ -159,6 +161,8 @@
     "cannotOpenFileError": "Cannot open file: {message}",
     "openFileError": "Error opening file: {error}",
     "shareError": "Share error: {error}",
-    "sharedFrom": "Shared from SnapPDF"
-
+    "sharedFrom": "Shared from SnapPDF",
+    "noChanges" : "No changes",
+    "download": "download",
+    "page": "page"
 }

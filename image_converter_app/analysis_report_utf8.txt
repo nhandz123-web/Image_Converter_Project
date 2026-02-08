@@ -1,0 +1,525 @@
+﻿Analyzing image_converter_app...                                
+
+   info - Don't invoke 'print' in production code - lib\blocs\home_bloc.dart:198:13 - avoid_print
+   info - Don't invoke 'print' in production code - lib\blocs\home_bloc.dart:202:15 - avoid_print
+   info - Don't invoke 'print' in production code - lib\blocs\home_bloc.dart:206:13 - avoid_print
+   info - Don't invoke 'print' in production code - lib\blocs\home_bloc.dart:221:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\blocs\home_bloc.dart:235:13 - avoid_print
+   info - Don't invoke 'print' in production code - lib\main.dart:21:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\main.dart:22:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\main.dart:28:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\main.dart:34:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\main.dart:45:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\main.dart:46:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\main.dart:69:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\main.dart:70:7 - avoid_print
+   info - Angle brackets will be interpreted as HTML - lib\models\document_model.dart:2:24 - unintended_html_in_doc_comment
+   info - Unnecessary braces in a string interpolation - lib\models\vip_package_model.dart:65:13 - unnecessary_brace_in_string_interps
+   info - Unnecessary braces in a string interpolation - lib\models\vip_package_model.dart:92:13 - unnecessary_brace_in_string_interps
+warning - Unused import: '../theme/app_colors.dart' - lib\screens\all_documents_screen.dart:7:8 - unused_import
+warning - Unused import: '../theme/app_text_styles.dart' - lib\screens\all_documents_screen.dart:8:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:68:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:87:46 - deprecated_member_use
+warning - Dead code - lib\screens\all_documents_screen.dart:101:67 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\all_documents_screen.dart:101:70 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:137:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:138:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:142:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:143:52 - deprecated_member_use
+warning - Dead code - lib\screens\all_documents_screen.dart:153:64 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\all_documents_screen.dart:153:67 - dead_null_aware_expression
+warning - Dead code - lib\screens\all_documents_screen.dart:231:63 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\all_documents_screen.dart:231:66 - dead_null_aware_expression
+warning - Dead code - lib\screens\all_documents_screen.dart:232:59 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\all_documents_screen.dart:232:62 - dead_null_aware_expression
+warning - Dead code - lib\screens\all_documents_screen.dart:273:46 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\all_documents_screen.dart:273:49 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:315:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:316:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:320:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:321:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:327:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:328:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:354:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\all_documents_screen.dart:357:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:154:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:185:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:293:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:293:80 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:294:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:294:82 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:334:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:335:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:338:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:377:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:378:31 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:389:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:390:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\downloaded_files\downloaded_files_screen.dart:568:33 - deprecated_member_use
+   info - 'Share' is deprecated and shouldn't be used. Use SharePlus instead - lib\screens\downloaded_files\downloaded_files_screen.dart:720:13 - deprecated_member_use
+   info - 'shareXFiles' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead - lib\screens\downloaded_files\downloaded_files_screen.dart:720:19 - deprecated_member_use
+   info - The imported package 'image' isn't a dependency of the importing package - lib\screens\edit_image\edit_image_screen.dart:5:8 - depend_on_referenced_packages
+warning - Unused import: '../../theme/app_colors.dart' - lib\screens\edit_image\edit_image_screen.dart:7:8 - unused_import
+warning - Unused import: '../../theme/app_dimensions.dart' - lib\screens\edit_image\edit_image_screen.dart:8:8 - unused_import
+warning - Unused import: '../../theme/app_text_styles.dart' - lib\screens\edit_image\edit_image_screen.dart:9:8 - unused_import
+   info - Unnecessary braces in a string interpolation - lib\screens\edit_image\edit_image_screen.dart:169:38 - unnecessary_brace_in_string_interps
+warning - Unused import: '../../../theme/app_colors.dart' - lib\screens\edit_image\widgets\edit_helpers.dart:2:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_image\widgets\edit_helpers.dart:33:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_image\widgets\edit_helpers.dart:35:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_image\widgets\edit_helpers.dart:83:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_image\widgets\edit_helpers.dart:117:26 - deprecated_member_use
+   info - The imported package 'image' isn't a dependency of the importing package - lib\screens\edit_image\widgets\full_screen_viewer.dart:4:8 - depend_on_referenced_packages
+warning - Unused import: '../../../theme/app_colors.dart' - lib\screens\edit_image\widgets\image_preview_section.dart:3:8 - unused_import
+warning - Unused import: '../../../theme/app_dimensions.dart' - lib\screens\edit_image\widgets\image_preview_section.dart:4:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_image\widgets\image_preview_section.dart:31:33 - deprecated_member_use
+warning - Unused import: '../widgets/app_header.dart' - lib\screens\edit_profile_screen.dart:8:8 - unused_import
+   info - Parameter 'key' could be a super parameter - lib\screens\edit_profile_screen.dart:13:9 - use_super_parameters
+   info - Invalid use of a private type in a public API - lib\screens\edit_profile_screen.dart:16:3 - library_private_types_in_public_api
+warning - Dead code - lib\screens\edit_profile_screen.dart:66:69 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:66:72 - dead_null_aware_expression
+warning - Dead code - lib\screens\edit_profile_screen.dart:87:71 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:87:74 - dead_null_aware_expression
+warning - Dead code - lib\screens\edit_profile_screen.dart:140:42 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:140:45 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:177:39 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_profile_screen.dart:195:43 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:204:49 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_profile_screen.dart:215:44 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:222:50 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:242:44 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:253:44 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_profile_screen.dart:266:43 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:276:56 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_profile_screen.dart:287:46 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:302:58 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_profile_screen.dart:318:43 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:328:60 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_profile_screen.dart:339:45 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:354:56 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_profile_screen.dart:370:43 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:380:59 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_profile_screen.dart:391:46 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:406:55 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\edit_profile_screen.dart:424:49 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\edit_profile_screen.dart:449:41 - dead_null_aware_expression
+warning - Unused import: 'dart:convert' - lib\screens\file_detail_screen.dart:12:8 - unused_import
+warning - Unused import: '../theme/app_dimensions.dart' - lib\screens\file_detail_screen.dart:15:8 - unused_import
+warning - Unused import: '../theme/app_text_styles.dart' - lib\screens\file_detail_screen.dart:16:8 - unused_import
+warning - Unused import: '../theme/app_theme.dart' - lib\screens\file_detail_screen.dart:17:8 - unused_import
+   info - Parameter 'key' could be a super parameter - lib\screens\file_detail_screen.dart:27:9 - use_super_parameters
+   info - 'Share' is deprecated and shouldn't be used. Use SharePlus instead - lib\screens\file_detail_screen.dart:150:13 - deprecated_member_use
+   info - 'shareXFiles' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead - lib\screens\file_detail_screen.dart:150:19 - deprecated_member_use
+   info - The local variable '_nameController' starts with an underscore - lib\screens\file_detail_screen.dart:179:27 - no_leading_underscores_for_local_identifiers
+warning - Dead code - lib\screens\file_detail_screen.dart:192:34 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:192:37 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:199:40 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:209:40 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:226:38 - dead_null_aware_expression
+warning - Dead code - lib\screens\file_detail_screen.dart:240:40 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:240:43 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:316:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:319:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:335:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:338:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:360:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:360:86 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:362:73 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:373:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:373:88 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:375:75 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:399:68 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:399:101 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:402:70 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:402:102 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:407:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:407:103 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:447:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:447:88 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:450:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:455:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:470:55 - deprecated_member_use
+warning - Dead code - lib\screens\file_detail_screen.dart:483:52 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:483:55 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:487:59 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:525:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:525:87 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:528:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:528:89 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:533:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:533:91 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:572:63 - deprecated_member_use
+warning - Dead code - lib\screens\file_detail_screen.dart:583:35 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:583:38 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:592:47 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:612:38 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:622:38 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:630:41 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:654:55 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:665:64 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:665:91 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:677:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:682:95 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:694:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:699:95 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:724:28 - deprecated_member_use
+warning - Dead code - lib\screens\file_detail_screen.dart:808:32 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\file_detail_screen.dart:808:35 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:830:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_detail_screen.dart:830:88 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - lib\screens\file_preview_screen.dart:21:9 - use_super_parameters
+   info - Don't invoke 'print' in production code - lib\screens\file_preview_screen.dart:91:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\file_preview_screen.dart:93:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\file_preview_screen.dart:95:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\file_preview_screen.dart:106:7 - avoid_print
+   info - 'Share' is deprecated and shouldn't be used. Use SharePlus instead - lib\screens\file_preview_screen.dart:118:11 - deprecated_member_use
+   info - 'shareXFiles' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead - lib\screens\file_preview_screen.dart:118:17 - deprecated_member_use
+   info - Don't invoke 'print' in production code - lib\screens\file_preview_screen.dart:284:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\file_preview_screen.dart:290:9 - avoid_print
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\file_preview_screen.dart:360:29 - deprecated_member_use
+warning - Dead code - lib\screens\home\all_tools_screen.dart:24:29 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\all_tools_screen.dart:24:32 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\all_tools_screen.dart:44:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\all_tools_screen.dart:45:32 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\all_tools_screen.dart:63:43 - dead_null_aware_expression
+   info - Don't invoke 'print' in production code - lib\screens\home\home_screen.dart:64:7 - avoid_print
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\home_screen.dart:124:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\home_screen.dart:143:50 - deprecated_member_use
+warning - Dead code - lib\screens\home\home_screen.dart:223:67 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\home_screen.dart:223:70 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\home_screen.dart:237:35 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\home_screen.dart:259:73 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\home_screen.dart:265:45 - dead_null_aware_expression
+warning - The value of the local variable 'lang' isn't used - lib\screens\home\home_screen.dart:283:11 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:81:33 - deprecated_member_use
+warning - Dead code - lib\screens\home\widgets\compress_dialog.dart:125:39 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\compress_dialog.dart:125:42 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:220:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:223:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:233:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:234:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:303:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:316:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:372:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:373:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:387:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:466:31 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:466:63 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:467:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:473:68 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:510:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\compress_dialog.dart:570:33 - deprecated_member_use
+warning - Dead code - lib\screens\home\widgets\compress_dialog.dart:618:37 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\compress_dialog.dart:618:40 - dead_null_aware_expression
+warning - Unused import: '../../../theme/app_dimensions.dart' - lib\screens\home\widgets\file_name_dialog.dart:3:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\file_name_dialog.dart:30:40 - deprecated_member_use
+warning - Dead code - lib\screens\home\widgets\file_name_dialog.dart:42:38 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\file_name_dialog.dart:42:41 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\file_name_dialog.dart:56:38 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\file_name_dialog.dart:98:36 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\file_name_dialog.dart:116:33 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:72:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:72:76 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:75:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:75:77 - deprecated_member_use
+warning - Dead code - lib\screens\home\widgets\history_list.dart:87:26 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\history_list.dart:87:29 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:117:29 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:118:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:122:31 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:123:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:188:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:189:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:193:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:194:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:215:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:216:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:223:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:247:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:277:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\history_list.dart:277:89 - deprecated_member_use
+warning - Unused import: '../../../theme/app_colors.dart' - lib\screens\home\widgets\home_widgets.dart:4:8 - unused_import
+warning - Unused import: '../../../theme/app_dimensions.dart' - lib\screens\home\widgets\home_widgets.dart:5:8 - unused_import
+warning - Unused import: '../../../theme/app_text_styles.dart' - lib\screens\home\widgets\home_widgets.dart:6:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\home_widgets.dart:35:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\home_widgets.dart:74:27 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\home_widgets.dart:84:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\home_widgets.dart:85:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\home_widgets.dart:88:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\home_widgets.dart:93:41 - deprecated_member_use
+warning - Dead code - lib\screens\home\widgets\home_widgets.dart:114:37 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\home_widgets.dart:114:40 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\home_widgets.dart:159:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\home_widgets.dart:162:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\home_widgets.dart:171:32 - deprecated_member_use
+warning - Dead code - lib\screens\home\widgets\image_source_modal.dart:66:40 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\image_source_modal.dart:66:43 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\image_source_modal.dart:75:44 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\image_source_modal.dart:121:24 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\image_source_modal.dart:123:43 - deprecated_member_use
+warning - The value of the local variable 'isDark' isn't used - lib\screens\home\widgets\merge_pdf_dialog.dart:38:11 - unused_local_variable
+warning - Dead code - lib\screens\home\widgets\merge_pdf_dialog.dart:65:42 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\merge_pdf_dialog.dart:65:45 - dead_null_aware_expression
+warning - Dead code - lib\screens\home\widgets\merge_pdf_dialog.dart:100:27 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\merge_pdf_dialog.dart:100:30 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\merge_pdf_dialog.dart:107:47 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\merge_pdf_dialog.dart:107:106 - dead_null_aware_expression
+warning - Dead code - lib\screens\home\widgets\merge_pdf_dialog.dart:159:29 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\merge_pdf_dialog.dart:159:32 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\merge_pdf_dialog.dart:194:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\merge_pdf_dialog.dart:198:65 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\merge_pdf_dialog.dart:208:42 - deprecated_member_use
+warning - Dead code - lib\screens\home\widgets\merge_pdf_dialog.dart:237:47 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\merge_pdf_dialog.dart:237:50 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\merge_pdf_dialog.dart:264:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\merge_pdf_dialog.dart:267:59 - deprecated_member_use
+warning - Dead code - lib\screens\home\widgets\merge_pdf_dialog.dart:297:32 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\merge_pdf_dialog.dart:297:35 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\merge_pdf_dialog.dart:314:64 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\merge_pdf_dialog.dart:334:30 - deprecated_member_use
+warning - Dead code - lib\screens\home\widgets\merge_pdf_dialog.dart:395:32 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\merge_pdf_dialog.dart:395:35 - dead_null_aware_expression
+   info - The private field _selectedPages could be 'final' - lib\screens\home\widgets\split_pdf_dialog.dart:41:13 - prefer_final_fields
+warning - Dead code - lib\screens\home\widgets\split_pdf_dialog.dart:114:39 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\split_pdf_dialog.dart:114:42 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\split_pdf_dialog.dart:274:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\split_pdf_dialog.dart:290:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\split_pdf_dialog.dart:598:41 - deprecated_member_use
+warning - The value of the local variable 'isDark' isn't used - lib\screens\home\widgets\tool_grid.dart:9:11 - unused_local_variable
+warning - Dead code - lib\screens\home\widgets\tool_grid.dart:14:33 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\tool_grid.dart:14:36 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\tool_grid.dart:21:34 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\tool_grid.dart:28:34 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\tool_grid.dart:35:35 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\tool_grid.dart:42:36 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\tool_grid.dart:49:32 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\tool_grid.dart:56:34 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\tool_grid.dart:119:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\tool_grid.dart:120:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\tool_grid.dart:124:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\tool_grid.dart:125:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\tool_grid.dart:131:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\tool_grid.dart:132:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\tool_grid.dart:150:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\tool_grid.dart:151:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\tool_grid.dart:158:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\tool_grid.dart:186:44 - deprecated_member_use
+warning - Unused import: '../../../theme/app_colors.dart' - lib\screens\home\widgets\welcome_card.dart:4:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\welcome_card.dart:51:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\welcome_card.dart:63:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\welcome_card.dart:76:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\welcome_card.dart:99:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\welcome_card.dart:102:49 - deprecated_member_use
+warning - Dead code - lib\screens\home\widgets\welcome_card.dart:112:51 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\welcome_card.dart:112:54 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\home\widgets\welcome_card.dart:126:49 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\welcome_card.dart:151:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\welcome_card.dart:154:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\home\widgets\welcome_card.dart:159:79 - deprecated_member_use
+   info - Constructors for public widgets should have a named 'key' parameter - lib\screens\login_screen.dart:14:7 - use_key_in_widget_constructors
+   info - Invalid use of a private type in a public API - lib\screens\login_screen.dart:16:3 - library_private_types_in_public_api
+warning - Dead code - lib\screens\login_screen.dart:43:49 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:43:52 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:84:44 - deprecated_member_use
+warning - Dead code - lib\screens\login_screen.dart:95:30 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:95:33 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:100:39 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:103:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:116:48 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:130:52 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:131:56 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:143:55 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:144:59 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:170:52 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:195:71 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:220:43 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:236:41 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\login_screen.dart:238:48 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\login_screen.dart:252:45 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\main_screen.dart:137:33 - deprecated_member_use
+warning - Dead code - lib\screens\main_screen.dart:156:39 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\main_screen.dart:156:42 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\main_screen.dart:168:43 - dead_null_aware_expression
+warning - Unused import: '../widgets/app_header.dart' - lib\screens\profile_screen.dart:16:8 - unused_import
+   info - Constructors for public widgets should have a named 'key' parameter - lib\screens\profile_screen.dart:19:7 - use_key_in_widget_constructors
+   info - Invalid use of a private type in a public API - lib\screens\profile_screen.dart:21:3 - library_private_types_in_public_api
+warning - The value of the field '_isFromCache' isn't used - lib\screens\profile_screen.dart:29:8 - unused_field
+warning - The '!' will have no effect because the receiver can't be null - lib\screens\profile_screen.dart:83:27 - unnecessary_non_null_assertion
+warning - The '!' will have no effect because the receiver can't be null - lib\screens\profile_screen.dart:84:36 - unnecessary_non_null_assertion
+warning - The '!' will have no effect because the receiver can't be null - lib\screens\profile_screen.dart:85:34 - unnecessary_non_null_assertion
+warning - The '!' will have no effect because the receiver can't be null - lib\screens\profile_screen.dart:86:37 - unnecessary_non_null_assertion
+   info - Don't invoke 'print' in production code - lib\screens\profile_screen.dart:92:12 - avoid_print
+   info - Don't invoke 'print' in production code - lib\screens\profile_screen.dart:96:7 - avoid_print
+   info - Use interpolation to compose strings and values - lib\screens\profile_screen.dart:128:12 - prefer_interpolation_to_compose_strings
+warning - Dead code - lib\screens\profile_screen.dart:172:42 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:172:45 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\profile_screen.dart:221:50 - deprecated_member_use
+   info - Don't invoke 'print' in production code - lib\screens\profile_screen.dart:235:39 - avoid_print
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:246:53 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\profile_screen.dart:268:56 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:278:49 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:310:52 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:311:54 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:311:127 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:334:50 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:353:50 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:367:53 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:377:45 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\profile_screen.dart:413:26 - deprecated_member_use
+warning - Dead code - lib\screens\profile_screen.dart:435:30 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:435:33 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:439:33 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:445:30 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\profile_screen.dart:461:30 - dead_null_aware_expression
+   info - Constructors for public widgets should have a named 'key' parameter - lib\screens\register_screen.dart:11:7 - use_key_in_widget_constructors
+   info - Invalid use of a private type in a public API - lib\screens\register_screen.dart:13:3 - library_private_types_in_public_api
+warning - Dead code - lib\screens\register_screen.dart:88:52 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\register_screen.dart:88:55 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\register_screen.dart:146:50 - deprecated_member_use
+warning - Dead code - lib\screens\register_screen.dart:157:39 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\register_screen.dart:157:42 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\register_screen.dart:174:54 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\register_screen.dart:185:55 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\register_screen.dart:196:52 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\register_screen.dart:237:56 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\register_screen.dart:267:55 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\register_screen.dart:283:62 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\register_screen.dart:314:52 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\register_screen.dart:330:49 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\register_screen.dart:331:69 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\register_screen.dart:336:48 - dead_null_aware_expression
+warning - Dead code - lib\screens\register_screen.dart:433:52 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\register_screen.dart:433:55 - dead_null_aware_expression
+warning - Unused import: '../widgets/app_header.dart' - lib\screens\settings_screen.dart:11:8 - unused_import
+   info - Constructors for public widgets should have a named 'key' parameter - lib\screens\settings_screen.dart:13:7 - use_key_in_widget_constructors
+warning - Dead code - lib\screens\settings_screen.dart:44:39 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:44:42 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:68:48 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\settings_screen.dart:84:30 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:96:40 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:100:53 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:100:85 - dead_null_aware_expression
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\screens\settings_screen.dart:107:21 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\settings_screen.dart:138:55 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:153:54 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\settings_screen.dart:161:69 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:175:57 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\settings_screen.dart:207:68 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:239:47 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:282:63 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:323:53 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:341:52 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:355:48 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\settings_screen.dart:371:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\settings_screen.dart:374:92 - deprecated_member_use
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:387:61 - dead_null_aware_expression
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\settings_screen.dart:407:55 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\settings_screen.dart:501:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\settings_screen.dart:567:74 - deprecated_member_use
+warning - The value of the field '_purchaseStatusMessage' isn't used - lib\screens\vip\vip_purchase_screen.dart:26:11 - unused_field
+   info - The imported package 'flutter_cache_manager' isn't a dependency of the importing package - lib\services\auth_service.dart:4:8 - depend_on_referenced_packages
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:35:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:42:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:80:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:111:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:142:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:144:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:156:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:159:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:178:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:193:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:199:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:206:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:222:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:226:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:230:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:241:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:245:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:256:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:280:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:283:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:293:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:295:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:331:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\auth_service.dart:368:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:43:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:46:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:59:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:70:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:76:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:79:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:88:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:119:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:122:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:147:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:164:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\cache_service.dart:173:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:73:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:98:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:142:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:181:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:204:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:212:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:238:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:300:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:336:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:400:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:458:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:522:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:569:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\document_service.dart:594:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:61:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:80:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:83:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:90:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:102:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:106:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:112:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:117:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:121:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:126:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:186:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:200:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:214:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:289:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:295:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\iap_service.dart:300:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\local_file_service.dart:94:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\local_file_service.dart:123:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\local_file_service.dart:156:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\local_file_service.dart:197:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\local_file_service.dart:212:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\local_file_service.dart:232:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\local_file_service.dart:257:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\local_file_service.dart:304:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\vip_service.dart:39:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\vip_service.dart:43:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\vip_service.dart:50:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\vip_service.dart:61:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\vip_service.dart:64:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\vip_service.dart:100:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\vip_service.dart:117:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\vip_service.dart:132:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\vip_service.dart:144:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\vip_service.dart:166:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\services\vip_service.dart:188:7 - avoid_print
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\theme\app_colors.dart:84:18 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\theme\app_theme.dart:118:33 - deprecated_member_use
+warning - Unused import: '../theme/app_colors.dart' - lib\widgets\app_header.dart:3:8 - unused_import
+warning - Unused import: '../theme/app_dimensions.dart' - lib\widgets\app_header.dart:4:8 - unused_import
+warning - Unused import: '../theme/app_text_styles.dart' - lib\widgets\app_header.dart:5:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\app_header.dart:86:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\app_header.dart:87:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\app_header.dart:91:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\app_header.dart:92:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\app_header.dart:170:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\app_header.dart:170:74 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\app_header.dart:196:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\app_header.dart:225:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\app_header.dart:225:74 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\vip_crown_icon.dart:111:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\vip_crown_icon.dart:234:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\vip_crown_icon.dart:255:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\vip_crown_icon.dart:256:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\vip_crown_icon.dart:289:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\vip_crown_icon.dart:439:59 - deprecated_member_use
+

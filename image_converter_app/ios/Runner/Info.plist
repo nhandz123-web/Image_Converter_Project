@@ -49,5 +49,11 @@
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Ứng dụng cần truy cập thư viện ảnh để bạn có thể chọn ảnh để chuyển đổi sang PDF.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Ứng dụng cần truy cập máy ảnh để bạn có thể chụp tài liệu và chuyển đổi sang PDF.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Ứng dụng cần truy cập microphone nếu bạn quay video.</string>
 	</dict>
 </plist>

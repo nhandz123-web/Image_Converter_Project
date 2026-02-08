@@ -9,9 +9,10 @@ import '../edit_image/edit_image_screen.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../services/auth_service.dart';
-
 // ✅ Import các widget đã tách
 import 'widgets/widgets.dart';
+import '../../theme/app_styles.dart'; // Import AppStyles
+import 'all_tools_screen.dart'; // Import AllToolsScreen
 import '../../widgets/app_header.dart';
 import '../../widgets/vip_crown_icon.dart';
 import '../vip/vip_purchase_screen.dart';
@@ -92,13 +93,31 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, state) {
         return Scaffold(
           body: Container(
-            decoration: BoxDecoration(
-              gradient: isDark
-                  ? AppColors.backgroundGradientDark
-                  : AppColors.backgroundGradientLight,
-            ),
+            decoration: AppStyles.homeBackground(isDark),
             child: Stack(
               children: [
+                // Background Blobs (Trang trí nền để Glass Effect rõ hơn)
+                if (!isDark) ...[
+                  Positioned(
+                    top: -100,
+                    right: -100,
+                    child: Container(
+                      width: 300,
+                      height: 300,
+                      decoration: AppStyles.homeBlob(Colors.blue.withOpacity(0.2)),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 100,
+                    left: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: AppStyles.homeBlob(Colors.purple.withOpacity(0.15), blurRadius: 60),
+                    ),
+                  ),
+                ],
+
                 // Main content
                 RefreshIndicator(
                   onRefresh: () async {
@@ -133,6 +152,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                       _buildBody(state, theme, isDark, lang),
+                      
+                      // Bottom padding for scroll
+                      const SliverToBoxAdapter(child: SizedBox(height: 80)),
                     ],
                   ),
                 ),
@@ -162,10 +184,34 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: AppDimensions.spacing24),
 
           // Popular Tools Section
-          SectionTitle(theme: theme, title: lang.popularTools ?? "Công cụ phổ biến"),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SectionTitle(theme: theme, title: lang.popularTools ?? "Công cụ phổ biến"),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AllToolsScreen(
+                        // Truyền callback để xử lý chọn tool
+                        onToolSelected: (toolId) => _handleToolSelected(toolId, lang, theme),
+                      ),
+                    ),
+                  );
+                },
+                child: Text(
+                  lang.viewAll ?? "Xem tất cả",
+                  style: AppStyles.viewAllLink(isDark, theme.primaryColor),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: AppDimensions.spacing16),
           ToolGrid(
             theme: theme,
+            limit: 6, // Chỉ hiện 6 tool đầu tiên
             onToolSelected: (toolId) => _handleToolSelected(toolId, lang, theme),
           ),
           const SizedBox(height: AppDimensions.spacing24),
@@ -201,6 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final lang = AppLocalizations.of(context)!;
 
     if (state is HomeSuccess) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(state.message),
@@ -211,6 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (state is HomeFailure) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(state.error),
@@ -234,10 +282,18 @@ class _HomeScreenState extends State<HomeScreen> {
         MergePdfDialog.show(context);
         break;
 
+      case 'split_pdf':
+        SplitPdfDialog.show(context);
+        break;
+
+      case 'compress':
+        CompressDialog.show(context);
+        break;
+
       case 'word_to_pdf':
       case 'excel_to_pdf':
       case 'qr_scan':
-      case 'compress':
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text("Tính năng đang phát triển"),

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_converter_app/l10n/app_localizations.dart';
@@ -7,7 +8,7 @@ import '../../../theme/app_dimensions.dart';
 import '../../file_detail_screen.dart';
 
 /// Widget hiển thị danh sách tài liệu gần đây
-/// Đã được cải thiện với thiết kế đẹp hơn cho Light Mode
+/// Style: Glassmorphism Modern
 class HistoryList extends StatelessWidget {
   final HomeState state;
   final ThemeData theme;
@@ -63,18 +64,22 @@ class HistoryList extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Icon with glass effect background
           Container(
-            padding: const EdgeInsets.all(24),
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
-              color: isDark 
-                  ? Colors.grey[800] 
-                  : AppColors.softPurple.withOpacity(0.1),
+              color: isDark ? Colors.white.withOpacity(0.05) : Colors.blue.withOpacity(0.05),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: isDark ? Colors.white.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+                width: 1,
+              ),
             ),
             child: Icon(
               Icons.folder_open_rounded,
-              size: 48,
-              color: isDark ? Colors.grey[400] : AppColors.softPurple,
+              size: 32,
+              color: isDark ? Colors.white54 : Colors.blue.shade300,
             ),
           ),
           const SizedBox(height: 16),
@@ -82,8 +87,8 @@ class HistoryList extends StatelessWidget {
             lang.noFiles ?? "Chưa có file nào",
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white70 : Colors.grey[600],
             ),
           ),
           const SizedBox(height: 8),
@@ -91,7 +96,7 @@ class HistoryList extends StatelessWidget {
             "Bắt đầu bằng cách chọn công cụ ở trên",
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? Colors.grey[500] : Colors.grey[500],
+              color: isDark ? Colors.white38 : Colors.grey[500],
             ),
           ),
         ],
@@ -111,7 +116,7 @@ class HistoryList extends StatelessWidget {
         color: isDark 
             ? Colors.orange.withOpacity(0.15) 
             : AppColors.softOrange.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark 
               ? Colors.orange.withOpacity(0.3) 
@@ -123,7 +128,7 @@ class HistoryList extends StatelessWidget {
         children: [
           Icon(
             Icons.cloud_off_rounded, 
-            size: 16, 
+            size: 14, 
             color: isDark ? Colors.orange[300] : AppColors.softOrange,
           ),
           const SizedBox(width: 8),
@@ -142,19 +147,10 @@ class HistoryList extends StatelessWidget {
             onTap: () {
               context.read<HomeBloc>().add(LoadHistoryRequested(forceRefresh: true));
             },
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: isDark 
-                    ? Colors.orange.withOpacity(0.2) 
-                    : AppColors.softOrange.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Icon(
-                Icons.refresh_rounded, 
-                size: 14, 
-                color: isDark ? Colors.orange[300] : AppColors.softOrange,
-              ),
+            child: Icon(
+              Icons.refresh_rounded, 
+              size: 16, 
+              color: isDark ? Colors.orange[300] : AppColors.softOrange,
             ),
           ),
         ],
@@ -168,9 +164,7 @@ class HistoryList extends StatelessWidget {
     AppLocalizations lang,
   ) {
     String fileName = doc['name']?.toString() ?? "Không tên";
-
-    bool isPdf = (doc['type'] == 'pdf') ||
-        fileName.toLowerCase().endsWith('.pdf');
+    bool isPdf = (doc['type'] == 'pdf') || fileName.toLowerCase().endsWith('.pdf');
 
     String dateDisplay = "";
     if (doc['created_at'] != null) {
@@ -179,113 +173,120 @@ class HistoryList extends StatelessWidget {
     }
 
     final Color iconColor = isPdf 
-        ? (isDark ? Colors.redAccent : const Color(0xFFF43F5E))
-        : (isDark ? Colors.blue : const Color(0xFF3B82F6));
+        ? (isDark ? const Color(0xFFF43F5E) : const Color(0xFFE11D48)) // Rose
+        : (isDark ? const Color(0xFF3B82F6) : const Color(0xFF2563EB)); // Blue
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: isDark ? theme.cardColor : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: isDark ? null : Border.all(
-          color: Colors.grey.withOpacity(0.1),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isDark 
-                ? Colors.black.withOpacity(0.2) 
-                : iconColor.withOpacity(0.08),
-            blurRadius: isDark ? 8 : 16,
-            offset: const Offset(0, 4),
-            spreadRadius: isDark ? 0 : -2,
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => FileDetailScreen(document: doc)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                // Icon container
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: iconColor.withOpacity(isDark ? 0.15 : 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: iconColor.withOpacity(0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: Icon(
-                    isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded,
-                    color: iconColor,
-                    size: 24,
-                  ),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark 
+                  ? Colors.white.withOpacity(0.05) 
+                  : Colors.white.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDark 
+                    ? Colors.white.withOpacity(0.1) 
+                    : Colors.white.withOpacity(0.5),
+                width: 1,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FileDetailScreen(document: doc)),
                 ),
-                const SizedBox(width: 14),
-                
-                // Text content
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
                     children: [
-                      Text(
-                        fileName, 
-                        maxLines: 1, 
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: isDark ? Colors.white : Colors.grey[800],
+                      // File Icon with Gradient Background
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              iconColor.withOpacity(0.2),
+                              iconColor.withOpacity(0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: iconColor.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded,
+                          color: iconColor,
+                          size: 24,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.access_time_rounded,
-                            size: 12,
-                            color: isDark ? Colors.grey[500] : Colors.grey[400],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            dateDisplay,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark ? Colors.grey[500] : Colors.grey[500],
+                      const SizedBox(width: 16),
+                      
+                      // File Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              fileName, 
+                              maxLines: 1, 
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                                color: isDark ? Colors.white.withOpacity(0.9) : const Color(0xFF1E293B),
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_today_rounded,
+                                  size: 12,
+                                  color: isDark ? Colors.white38 : Colors.grey[500],
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  dateDisplay,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? Colors.white38 : Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Action Icon
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 16,
+                          color: isDark ? Colors.white38 : Colors.grey[500],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                
-                // Arrow icon
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isDark 
-                        ? Colors.grey[800] 
-                        : Colors.grey.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

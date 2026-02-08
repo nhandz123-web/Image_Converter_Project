@@ -1,8 +1,9 @@
 import 'dart:math';
+import 'dart:ui'; // Create for ImageFilter
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_converter_app/l10n/app_localizations.dart';
-import '../services/document_service.dart';
 import '../services/auth_service.dart';
 import '../blocs/auth_bloc.dart';
 import '../config/api_config.dart';
@@ -13,15 +14,18 @@ import '../theme/app_colors.dart';
 import '../theme/app_dimensions.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_styles.dart';
+import '../theme/app_component_styles.dart';
 import '../widgets/app_header.dart';
 
 class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final DocumentService _documentService = DocumentService();
   final AuthService _authService = AuthService();
 
   // Biến lưu dữ liệu dung lượng
@@ -41,9 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// Load tất cả dữ liệu (user info, storage)
-  /// [forceRefresh] - Bắt buộc load từ API, bỏ qua cache
   Future<void> _loadAllData({bool forceRefresh = false}) async {
-    // Khởi tạo giá trị mặc định
     int usedBytes = 0;
     int totalBytes = 1073741824; // 1GB mặc định
     double percent = 0.0;
@@ -52,33 +54,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String? photoUrl;
     bool isFromCache = false;
 
-    // Gọi API lấy thông tin User (bao gồm storage)
     try {
       final userData = await _authService.getUser(forceRefresh: forceRefresh);
       if (userData != null) {
         name = userData['name'] ?? 'Người dùng';
         email = userData['email'] ?? '';
-        
-        // Parse storage info từ user data
+
         if (userData['storage'] != null) {
           final storage = userData['storage'];
-          // Convert an toàn từ dynamic
           usedBytes = (storage['used_bytes'] as num?)?.toInt() ?? 0;
           totalBytes = (storage['max_bytes'] as num?)?.toInt() ?? 1073741824;
-          
-          // Tính phần trăm
+
           if (totalBytes > 0) {
             percent = (usedBytes / totalBytes).clamp(0.0, 1.0);
           }
         }
-        
-        // Parse photo
+
         String? rawPhoto = userData['photo'];
         if (rawPhoto != null && rawPhoto.isNotEmpty) {
            if (rawPhoto.startsWith('http')) {
               photoUrl = rawPhoto;
+              if (photoUrl!.contains('localhost')) {
+                photoUrl = photoUrl!.replaceFirst('localhost', ApiConfig.host);
+              } else if (photoUrl!.contains('127.0.0.1')) {
+                 photoUrl = photoUrl!.replaceFirst('127.0.0.1', ApiConfig.host);
+              }
            } else {
-              // Fix relative path
               photoUrl = '${ApiConfig.baseUrl}/${rawPhoto.replaceAll(RegExp(r'^/+'), '')}';
            }
         }
@@ -88,7 +89,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       isFromCache = true;
     }
 
-    // Cập nhật UI
     if (mounted) {
       setState(() {
         _usedBytes = usedBytes;
@@ -103,7 +103,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  /// Force refresh data từ API
   Future<void> _forceRefresh() async {
     setState(() {
       _isLoading = true;
@@ -111,7 +110,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await _loadAllData(forceRefresh: true);
   }
 
-  // Hàm format số bytes sang MB/GB cho dễ đọc
   String formatBytes(int bytes, int decimals) {
     if (bytes <= 0) return "0 B";
     const suffixes = ["B", "KB", "MB", "GB", "TB"];
@@ -125,242 +123,176 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Logic màu sắc thanh tiến trình
-    Color progressColor = _percent > 0.9 ? AppColors.red : AppColors.orange;
-
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthLoggedOut) {
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => LoginScreen()),
+            MaterialPageRoute(builder: (context) =>  LoginScreen()),
                 (route) => false,
           );
         }
       },
       child: Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        // --- AppBar sử dụng AppHeader ---
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(80),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: AppTheme.getPrimaryGradient(isDark),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: AppDimensions.paddingH16,
-                child: Row(
-                  children: [
-                    // Back button
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.white),
+        extendBodyBehindAppBar: true,
+        body: Container(
+          decoration: AppStyles.homeBackground(isDark),
+          child: Stack(
+            children: [
+              // Background Blobs
+              if (!isDark) ...[
+                Positioned(
+                  top: -50,
+                  right: -50,
+                  child: Container(
+                    width: 300,
+                    height: 300,
+                    decoration: AppStyles.homeBlob(Colors.blue.withOpacity(0.2)),
+                  ),
+                ),
+                Positioned(
+                  bottom: 100,
+                  left: -50,
+                  child: Container(
+                    width: 250,
+                    height: 250,
+                    decoration: AppStyles.homeBlob(Colors.purple.withOpacity(0.15), blurRadius: 60),
+                  ),
+                ),
+              ],
+
+              // Main Content with CustomScrollView
+              CustomScrollView(
+                slivers: [
+                   AppHeader(
+                    title: lang.myProfile ?? "Hồ sơ của tôi",
+                    showLogo: false,
+                    showVipCrown: false,
+                    showProfileButton: false,
+                    leading: IconButton(
+                      icon: Icon(Icons.arrow_back_ios_new_rounded, color: isDark ? Colors.white : Colors.black87),
                       onPressed: () => Navigator.pop(context),
                     ),
-                    // Title
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          lang.myProfile ?? "Hồ sơ của tôi",
-                          style: const TextStyle(
-                            fontWeight: AppTextStyles.weightBold,
-                            color: AppColors.white,
-                            fontSize: AppTextStyles.fontSize20,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Refresh button
-                    IconButton(
-                      icon: _isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.white,
-                              ),
-                            )
-                          : const Icon(Icons.refresh, color: AppColors.white),
-                      onPressed: _isLoading ? null : _forceRefresh,
-                      tooltip: "Làm mới",
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              // --- HEADER với Gradient cho cả Light & Dark mode ---
-              Container(
-                padding: const EdgeInsets.only(bottom: AppDimensions.spacing30),
-                decoration: BoxDecoration(
-                  gradient: isDark ? AppColors.welcomeCardGradientDark : AppColors.welcomeCardGradientLight,
-                  borderRadius: AppDimensions.borderRadiusBottom30,
-                ),
-                child: Column(
-                  children: [
-                    Center(
-                      child: Container(
-                        padding: AppDimensions.paddingAll4,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.white.withOpacity(AppColors.opacity30),
-                        ),
-                        child: CircleAvatar(
-                          radius: AppDimensions.avatarSizeRegular,
-                          backgroundColor: isDark ? AppColors.grey800 : AppColors.white,
-                          backgroundImage: _photoUrl != null ? NetworkImage(_photoUrl!) : null,
-                          child: _photoUrl == null 
-                              ? Icon(Icons.person, size: AppDimensions.iconSizeHuge, color: isDark ? AppColors.white : theme.primaryColor)
-                              : null,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacing16),
-                    Text(
-                      _isLoading ? (lang.loading ?? "Đang tải...") : _name,
-                      style: const TextStyle(fontSize: AppTextStyles.fontSize22, fontWeight: AppTextStyles.weightBold, color: AppColors.white),
-                    ),
-                    Text(
-                      _email,
-                      style: const TextStyle(fontSize: AppTextStyles.fontSize14, color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: AppDimensions.spacing20),
-
-              // --- THANH DUNG LƯỢNG (DATA THẬT) - ĐÃ SỮA MÀU ---
-              Padding(
-                padding: AppDimensions.paddingH20,
-                child: Container(
-                  padding: AppDimensions.paddingAll20,
-                  decoration: BoxDecoration(
-                    color: theme.cardColor,
-                    borderRadius: AppDimensions.borderRadius20,
-                    boxShadow: [
-                      BoxShadow(color: AppColors.black.withOpacity(AppColors.opacity05), blurRadius: AppDimensions.blurRadius10, offset: const Offset(0, 4)),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            lang.storageUsed ?? "Dung lượng đã dùng",
-                            style: TextStyle(
-                              fontWeight: AppTextStyles.weightBold,
-                              color: isDark ? AppColors.white : AppColors.black,
-                            ),
-                          ),
-                          _isLoading
-                              ? const SizedBox(width: AppDimensions.iconSizeMedium, height: AppDimensions.iconSizeMedium, child: CircularProgressIndicator(strokeWidth: 2))
-                              : Text(
-                            "${formatBytes(_usedBytes, 2)} / ${formatBytes(_totalBytes, 0)}",
-                            style: TextStyle(
-                              color: isDark ? AppColors.blue300 : theme.primaryColor,
-                              fontWeight: AppTextStyles.weightBold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppDimensions.spacing10),
-                      ClipRRect(
-                        borderRadius: AppDimensions.borderRadius10,
-                        child: _isLoading
-                            ? const LinearProgressIndicator(minHeight: AppDimensions.progressBarHeight)
-                            : LinearProgressIndicator(
-                          value: _percent,
-                          backgroundColor: isDark ? AppColors.grey800 : AppColors.grey200,
-                          valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-                          minHeight: AppDimensions.progressBarHeight,
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.spacing8),
-                      Text(
-                        _isLoading
-                            ? (lang.calculating ?? "Đang tính toán...")
-                            : "${lang.youHaveUsed ?? "Bạn đã dùng"} ${(_percent * 100).toStringAsFixed(1)}% ${lang.storage ?? "dung lượng"}.",
-                        style: TextStyle(
-                          fontSize: AppTextStyles.fontSize12,
-                          color: AppTheme.getSecondaryTextColor(isDark),
-                        ),
+                    actions: [
+                       IconButton(
+                        icon: _isLoading
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: isDark ? Colors.white : theme.primaryColor,
+                                ),
+                              )
+                            : Icon(Icons.refresh_rounded, color: isDark ? Colors.white : Colors.black87),
+                        onPressed: _isLoading ? null : _forceRefresh,
+                        tooltip: "Làm mới",
                       ),
                     ],
-                  ),
-                ),
-              ),
+                   ),
 
-              const SizedBox(height: AppDimensions.spacing20),
+                   SliverPadding(
+                     padding: const EdgeInsets.all(16.0),
+                     sliver: SliverList(
+                       delegate: SliverChildListDelegate([
+                         // Profile Info Card
+                         _buildProfileInfoCard(isDark, theme, lang),
+                         const SizedBox(height: 20),
 
-              // --- MENU ---
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    _buildProfileItem(
-                      context,
-                      lang: lang,
-                      theme: theme,
-                      icon: Icons.person_outline,
-                      title: lang.editProfile ?? "Chỉnh sửa thông tin",
-                      color: Colors.blue,
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditProfileScreen(currentName: _name),
+                         // Storage Card
+                         _buildStorageCard(isDark, theme, lang),
+                         const SizedBox(height: 24),
+
+                         // Data Source Warning
+                         if (_isFromCache)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 20),
+                            child: Row(
+                              children: [
+                                Icon(Icons.wifi_off_rounded, color: Colors.orange, size: 16),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "Đang hiển thị dữ liệu offline",
+                                    style: TextStyle(color: Colors.orange, fontSize: 13),
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
-                        );
-                        if (result == true) {
-                          _loadAllData();
-                        }
-                      },
-                    ),
-                    _buildProfileItem(
-                      context,
-                      lang: lang,
-                      theme: theme,
-                      icon: Icons.settings_outlined,
-                      title: lang.appSettings ?? "Cài đặt ứng dụng",
-                      color: Colors.purple,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => SettingsScreen()),
-                        );
-                      },
-                    ),
-                    _buildProfileItem(
-                      context,
-                      lang: lang,
-                      theme: theme,
-                      icon: Icons.help_outline,
-                      title: lang.helpAndSupport ?? "Trợ giúp & Hỗ trợ",
-                      color: Colors.orange,
-                      onTap: () {},
-                    ),
-                    SizedBox(height: 20),
-                    _buildProfileItem(
-                      context,
-                      lang: lang,
-                      theme: theme,
-                      icon: Icons.logout,
-                      title: lang.logout ?? "Đăng xuất",
-                      color: Colors.red,
-                      isDestructive: true,
-                      onTap: () {
-                        _showLogoutDialog(context, lang);
-                      },
-                    ),
-                  ],
-                ),
+
+                         // Menu Items
+                         _buildGlassContainer(
+                           isDark: isDark,
+                           child: Column(
+                             children: [
+                               _buildProfileItem(
+                                  context,
+                                  icon: Icons.edit_outlined,
+                                  title: lang.editProfile ?? "Chỉnh sửa thông tin",
+                                  color: Colors.blue,
+                                  onTap: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EditProfileScreen(currentName: _name),
+                                      ),
+                                    );
+                                    if (result == true) {
+                                      _loadAllData();
+                                    }
+                                  },
+                                  isDark: isDark,
+                                ),
+                                Divider(height: 1, indent: 56, color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05)),
+                                _buildProfileItem(
+                                  context,
+                                  icon: Icons.settings_outlined,
+                                  title: lang.appSettings ?? "Cài đặt ứng dụng",
+                                  color: Colors.purple,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => SettingsScreen()),
+                                    );
+                                  },
+                                  isDark: isDark,
+                                ),
+                                Divider(height: 1, indent: 56, color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05)),
+                                _buildProfileItem(
+                                  context,
+                                  icon: Icons.help_outline_rounded,
+                                  title: lang.helpAndSupport ?? "Trợ giúp & Hỗ trợ",
+                                  color: Colors.orange,
+                                  onTap: () {},
+                                  isDark: isDark,
+                                ),
+                             ],
+                           )
+                         ),
+
+                         const SizedBox(height: 20),
+
+                         // Logout Button
+                          _buildGlassContainer(
+                           isDark: isDark,
+                           child: _buildProfileItem(
+                              context,
+                              icon: Icons.logout_rounded,
+                              title: lang.logout ?? "Đăng xuất",
+                              color: Colors.red,
+                              isDestructive: true,
+                              onTap: () {
+                                _showLogoutDialog(context, lang);
+                              },
+                              isDark: isDark,
+                           ),
+                         ),
+
+                         const SizedBox(height: 40),
+                       ]),
+                     ),
+                   )
+                ],
               ),
             ],
           ),
@@ -369,59 +301,268 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileItem(
-      BuildContext context, {
-        required AppLocalizations lang,
-        required ThemeData theme,
-        required IconData icon,
-        required String title,
-        required Color color,
-        required VoidCallback onTap,
-        bool isDestructive = false,
-      }) {
-    return Card(
-      elevation: AppDimensions.elevation0,
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacing10),
-      color: theme.cardColor,
-      shape: RoundedRectangleBorder(borderRadius: AppDimensions.borderRadius15),
-      child: ListTile(
-        leading: Container(
-          padding: AppDimensions.paddingAll10,
-          decoration: BoxDecoration(
-            color: color.withOpacity(AppColors.opacity10),
-            borderRadius: AppDimensions.borderRadius10,
-          ),
-          child: Icon(icon, color: color),
+  Widget _buildProfileInfoCard(bool isDark, ThemeData theme, AppLocalizations lang) {
+    return _buildGlassContainer(
+      isDark: isDark,
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: AppComponentStyles.glowingAvatarBorder(theme.primaryColor),
+              child: CircleAvatar(
+                radius: 40,
+                backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                child: _photoUrl != null
+                    ? ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: _photoUrl!,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
+                          errorWidget: (context, url, error) {
+                            return Icon(Icons.person, size: 40, color: theme.primaryColor);
+                          },
+                        ),
+                      )
+                    : Icon(Icons.person, size: 40, color: theme.primaryColor),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _isLoading ? (lang.loading ?? "Đang tải...") : _name,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : const Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _email,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? Colors.white54 : Colors.grey[600],
+              ),
+            ),
+          ],
         ),
-        title: Text(
-          title,
-          style: TextStyle(fontWeight: AppTextStyles.weightSemiBold, color: isDestructive ? AppColors.red : null),
-        ),
-        trailing: Icon(Icons.arrow_forward_ios_rounded, size: AppDimensions.iconSizeMedium, color: AppColors.grey),
-        onTap: onTap,
       ),
     );
   }
 
-  // Dialog xác nhận đăng xuất
+  Widget _buildStorageCard(bool isDark, ThemeData theme, AppLocalizations lang) {
+     Color progressColor = _percent > 0.9 ? AppColors.error : const Color(0xFF10B981); // Emerald 500
+
+    return _buildGlassContainer(
+      isDark: isDark,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: AppComponentStyles.iconContainer(
+                        color: Colors.blue,
+                        isDark: isDark,
+                        borderRadius: 10,
+                      ),
+                      child: Icon(Icons.cloud_queue_rounded,
+                        color: isDark ? Colors.white : Colors.blue,
+                        size: 20
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      lang.storageUsed ?? "Dung lượng",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
+                    ),
+                  ],
+                ),
+                if (!_isLoading)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: AppComponentStyles.badgeContainer(
+                      color: progressColor,
+                      borderRadius: 12,
+                    ),
+                    child: Text(
+                      "${(_percent * 100).toStringAsFixed(1)}%",
+                      style: TextStyle(
+                        color: progressColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Progress Bar
+            Stack(
+              children: [
+                Container(
+                  height: 10,
+                  width: double.infinity,
+                  decoration: AppComponentStyles.progressTrackBackground(
+                    isDark: isDark,
+                    borderRadius: 5,
+                  ),
+                ),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Container(
+                      height: 10,
+                      width: constraints.maxWidth * (_isLoading ? 0 : _percent).clamp(0.0, 1.0),
+                      decoration: AppComponentStyles.progressFill(
+                        progressColor: progressColor,
+                        borderRadius: 5,
+                      ),
+                    );
+                  }
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _isLoading ? "..." : formatBytes(_usedBytes, 1),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white70 : Colors.grey[700],
+                  ),
+                ),
+                Text(
+                  _isLoading ? "..." : formatBytes(_totalBytes, 0),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark ? Colors.white38 : Colors.grey[500],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileItem(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required Color color,
+        required VoidCallback onTap,
+        required bool isDark,
+        bool isDestructive = false,
+      }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        // borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: AppComponentStyles.iconContainer(
+                  color: color,
+                  isDark: false,
+                  borderRadius: 10,
+                ),
+                child: Icon(icon, color: color, size: 22),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: isDestructive ? AppColors.error : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: isDark ? Colors.white24 : Colors.grey[300]
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassContainer({required Widget child, required bool isDark}) {
+    return AppWidgetHelpers.glassContainer(
+      child: child,
+      isDark: isDark,
+      borderRadius: 24,
+    );
+  }
+
   void _showLogoutDialog(BuildContext context, AppLocalizations lang) {
+     final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: AppDimensions.borderRadius20),
-        title: Text(
-          lang.confirmLogout ?? "Xác nhận đăng xuất",
-          style: const TextStyle(fontWeight: AppTextStyles.weightBold),
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: AppComponentStyles.dialogIconContainer(
+                color: AppColors.error,
+                borderRadius: 8,
+              ),
+              child: const Icon(Icons.logout_rounded, color: AppColors.error, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              lang.confirmLogout ?? "Đăng xuất",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : const Color(0xFF1E293B),
+                fontSize: 18,
+              ),
+            ),
+          ],
         ),
         content: Text(
           lang.logoutMessage ?? "Bạn có chắc chắn muốn đăng xuất?",
+          style: TextStyle(
+            color: isDark ? Colors.white70 : const Color(0xFF64748B),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               lang.cancel ?? "Hủy",
-              style: TextStyle(color: AppColors.grey),
+              style: TextStyle(color: isDark ? Colors.white54 : Colors.grey),
             ),
           ),
           ElevatedButton(
@@ -430,14 +571,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context.read<AuthBloc>().add(LogoutRequested());
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.red,
+              backgroundColor: AppColors.error,
+              elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: AppDimensions.borderRadius10,
+                borderRadius: BorderRadius.circular(10),
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
             child: Text(
               lang.logout ?? "Đăng xuất",
-              style: const TextStyle(color: AppColors.white),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ],

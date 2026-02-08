@@ -308,6 +308,18 @@ abstract class AppLocalizations {
   /// **'Merge PDF'**
   String get mergePdf;
 
+  /// No description provided for @splitPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Split PDF'**
+  String get splitPdf;
+
+  /// No description provided for @compress.
+  ///
+  /// In en, this message translates to:
+  /// **'Compress'**
+  String get compress;
+
   /// No description provided for @compressData.
   ///
   /// In en, this message translates to:
@@ -1003,6 +1015,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Shared from SnapPDF'**
   String get sharedFrom;
+
+  /// No description provided for @noChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'No changes'**
+  String get noChanges;
+
+  /// No description provided for @download.
+  ///
+  /// In en, this message translates to:
+  /// **'download'**
+  String get download;
+
+  /// No description provided for @page.
+  ///
+  /// In en, this message translates to:
+  /// **'page'**
+  String get page;
 }
 
 class _AppLocalizationsDelegate
